@@ -7,7 +7,7 @@ class Maze:
     def __init__(self, num_cols: int, num_rows: int):
         self.num_cols = num_cols
         self.num_rows = num_rows
-        self.maze_numpy = np.zeros((num_rows, num_cols))
+        self.maze_numpy = np.zeros((num_rows, num_cols)) + 2
         self.maze = list()
         for row_num in range(self.num_rows):
             lst = list()
@@ -20,13 +20,13 @@ class Maze:
                + '\nMaze: ' + str(self.maze)
 
     def reset(self):
-        self.maze_numpy.fill(0)
+        self.maze_numpy.fill(2)
         for row in range(self.num_rows):
             for col in range(self.num_cols):
                 self.maze[row][col].reset()
 
     def reset_except_h(self):
-        self.maze_numpy.fill(0)
+        self.maze_numpy.fill(2)
         for row in range(self.num_rows):
             for col in range(self.num_cols):
                 self.maze[row][col].reset_except_h()

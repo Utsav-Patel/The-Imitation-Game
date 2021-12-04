@@ -1,5 +1,4 @@
 import numpy as np
-import random
 from sortedcontainers import SortedSet
 
 from src import Maze
@@ -62,6 +61,28 @@ def check(pos: tuple, num_cols: int, num_rows: int):
     return False
 
 
+def find_output(current_position: tuple, next_position: tuple):
+    for ind in range(len(X)):
+        if (current_position[0] + X[ind], current_position[1] + Y[ind]) == next_position:
+            return ind
+
+    raise Exception("Invalid Input")
+    # if current_position[0] != next_position[0]:
+    #     if current_position[0] == next_position[0] + 1:
+    #         return 1
+    #     elif current_position[0] + 1 == next_position[0]:
+    #         return 3
+    #     else:
+    #         raise Exception("Invalid Input")
+    # else:
+    #     if current_position[1] == next_position[1] + 1:
+    #         return 4
+    #     elif current_position[1] + 1 == next_position[1]:
+    #         return 2
+    #     else:
+    #         raise Exception("Invalid Input")
+
+
 def astar_search(maze: Maze, start_pos: tuple, goal_pos: tuple):
     """
     Function to compute A* search
@@ -89,7 +110,7 @@ def astar_search(maze: Maze, start_pos: tuple, goal_pos: tuple):
     maze.maze[start_pos[0]][start_pos[1]].f = maze.maze[start_pos[0]][start_pos[1]].h
 
     # Assigning a random number to start position to the starting position and adding to visited nodes
-    node_to_random_number_mapping[start_pos] = random.uniform(0, 1)
+    node_to_random_number_mapping[start_pos] = 0
     visited_nodes.add(start_pos)
 
     # Add start position node into the sorted set. We are giving priority to f(n), h(n), and g(n) in the decreasing
@@ -130,11 +151,10 @@ def astar_search(maze: Maze, start_pos: tuple, goal_pos: tuple):
                     maze.maze[neighbour[0]][neighbour[1]].g = maze.maze[current_node[1][0]][current_node[1][1]].g + 1
                     maze.maze[neighbour[0]][neighbour[1]].f = maze.maze[neighbour[0]][neighbour[1]].g + \
                                                               maze.maze[neighbour[0]][neighbour[1]].h
-                    node_to_random_number_mapping[neighbour] = random.uniform(0, 1)
+                    node_to_random_number_mapping[neighbour] = val
                     visited_nodes.add(neighbour)
                     sorted_set.add(((maze.maze[neighbour[0]][neighbour[1]].f, maze.maze[neighbour[0]][neighbour[1]].h,
-                                     maze.maze[neighbour[0]][neighbour[1]].g, node_to_random_number_mapping[neighbour]),
-                                    neighbour))
+                                     maze.maze[neighbour[0]][neighbour[1]].g, val), neighbour))
                     parents[neighbour] = current_node[1]
 
                 # If a particular neighbour is already visited, we should compare its f(n) value to its previous f(n)
@@ -150,38 +170,20 @@ def astar_search(maze: Maze, start_pos: tuple, goal_pos: tuple):
                         # particular neighbour
                         if ((maze.maze[neighbour[0]][neighbour[1]].f, maze.maze[neighbour[0]][neighbour[1]].h,
                              maze.maze[neighbour[0]][neighbour[1]].g, node_to_random_number_mapping[neighbour]),
-                             neighbour) in sorted_set:
+                            neighbour) in sorted_set:
                             sorted_set.remove(
                                 ((maze.maze[neighbour[0]][neighbour[1]].f, maze.maze[neighbour[0]][neighbour[1]].h,
                                   maze.maze[neighbour[0]][neighbour[1]].g, node_to_random_number_mapping[neighbour]),
                                  neighbour))
                         maze.maze[neighbour[0]][neighbour[1]].g = neighbour_g
                         maze.maze[neighbour[0]][neighbour[1]].f = neighbour_f
-                        node_to_random_number_mapping[neighbour] = random.uniform(0, 1)
+                        node_to_random_number_mapping[neighbour] = val
                         sorted_set.add(
                             ((maze.maze[neighbour[0]][neighbour[1]].f, maze.maze[neighbour[0]][neighbour[1]].h,
-                              maze.maze[neighbour[0]][neighbour[1]].g, node_to_random_number_mapping[neighbour]),
-                             neighbour))
+                              maze.maze[neighbour[0]][neighbour[1]].g, val), neighbour))
                         parents[neighbour] = current_node[1]
 
     return parents, num_explored_nodes
-
-
-def find_output(current_position: tuple, next_position: tuple):
-    if current_position[0] != next_position[0]:
-        if current_position[0] == next_position[0] + 1:
-            return 1
-        elif current_position[0] + 1 == next_position[0]:
-            return 3
-        else:
-            raise Exception("Invalid Input")
-    else:
-        if current_position[1] == next_position[1] + 1:
-            return 4
-        elif current_position[1] + 1 == next_position[1]:
-            return 2
-        else:
-            raise Exception("Invalid Input")
 
 
 def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tuple, goal_pos: tuple,
@@ -213,11 +215,10 @@ def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tu
 
         # If goal_pos doesn't exist in parents which means path is not available so returning empty list.
         if goal_pos not in parents:
-
             data.append({
                 'current_pos': start_pos,
                 'input': maze.maze_numpy.copy(),
-                'output': 5
+                'output': 4
             })
 
             return list(), total_explored_nodes, num_backtracks
@@ -243,23 +244,29 @@ def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tu
         # iteration.
         while cur_pos != children[cur_pos]:
 
+            maze.maze_numpy[cur_pos[0]][cur_pos[1]] = 0
+
+            # Explore the field of view and update the blocked nodes if there's any in the path.
+            if is_field_of_view_explored:
+                for ind in range(len(X)):
+                    neighbour = (cur_pos[0] + X[ind], cur_pos[1] + Y[ind])
+                    if check(neighbour, NUM_COLS, NUM_ROWS):
+                        if maze_array[neighbour[0]][neighbour[1]] == 1:
+                            maze.maze[neighbour[0]][neighbour[1]].is_blocked = True
+                            maze.maze_numpy[neighbour[0]][neighbour[1]] = 1
+                        else:
+                            maze.maze_numpy[neighbour[0]][neighbour[1]] = 0
+
+            # If we encounter any block in the path, we have to terminate the iteration
+            if maze_array[children[cur_pos][0]][children[cur_pos][1]] == 1:
+                break
+
             data.append({
                 'current_pos': cur_pos,
                 'input': maze.maze_numpy.copy(),
                 'output': find_output(cur_pos, children[cur_pos])
             })
 
-            # Explore the field of view and update the blocked nodes if there's any in the path.
-            if is_field_of_view_explored:
-                for ind in range(len(X)):
-                    neighbour = (cur_pos[0] + X[ind], cur_pos[1] + Y[ind])
-                    if (check(neighbour, NUM_COLS, NUM_ROWS)) and (maze_array[neighbour[0]][neighbour[1]] == 1):
-                        maze.maze[neighbour[0]][neighbour[1]].is_blocked = True
-                        maze.maze_numpy[neighbour[0]][neighbour[1]] = 1
-
-            # If we encounter any block in the path, we have to terminate the iteration
-            if maze_array[children[cur_pos][0]][children[cur_pos][1]] == 1:
-                break
             cur_pos = children[cur_pos]
             current_path.append(cur_pos)
 

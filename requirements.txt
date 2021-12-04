@@ -3,3 +3,6 @@ wincertstore==0.2
 
 numpy~=1.21.4
 sortedcontainers~=2.4.0
+sklearn~=0.0
+scikit-learn~=1.0.1
+tensorflow-gpu~=2.7.0
