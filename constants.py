@@ -1,9 +1,9 @@
-NUM_COLS = 50
-NUM_ROWS = 50
+NUM_COLS = 30
+NUM_ROWS = 30
 INF = 1e9
 
 CHECKPOINT_FILEPATH = "../checkpoints/project1_dense/20x20/added_neighbor_num_visited/cp-{epoch:04d}.ckpt"
-DATA_PATH = "../data/project1_dense/20x20/added_neighbors_num_visited_multiprocessing.pkl"
+DATA_PATH = "../data/project1_dense/30x30/added_neighbors_num_visited_multiprocessing.pkl"
 
 STARTING_POSITION_OF_AGENT = (0, 0)
 GOAL_POSITION_OF_AGENT = (NUM_ROWS - 1, NUM_COLS - 1)
