@@ -4,7 +4,7 @@ import tensorflow as tf
 def create_model_project1_agent_10x10():
     model = tf.keras.models.Sequential([
         # tf.keras.layers.Flatten(input_shape=(28, 28)),
-        tf.keras.layers.Dense(2048, activation='relu', input_shape=(101,)),
+        tf.keras.layers.Dense(2048, activation='relu', input_shape=(100,)),
         tf.keras.layers.Dense(1024, activation='relu'),
         tf.keras.layers.Dense(512, activation='relu'),
         tf.keras.layers.Dense(256, activation='relu'),
@@ -13,7 +13,7 @@ def create_model_project1_agent_10x10():
         tf.keras.layers.Dense(64, activation='relu'),
         tf.keras.layers.Dense(32, activation='relu'),
         tf.keras.layers.Dense(16, activation='relu'),
-        tf.keras.layers.Dense(5),
+        tf.keras.layers.Dense(5, activation='softmax'),
         # tf.keras.layers.Softmax()
     ])
 

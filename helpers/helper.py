@@ -2,7 +2,8 @@ import numpy as np
 from sortedcontainers import SortedSet
 
 from src import Maze
-from constants import NUM_COLS, NUM_ROWS, STARTING_POSITION_OF_AGENT, GOAL_POSITION_OF_AGENT, X, Y
+from constants import NUM_COLS, NUM_ROWS, STARTING_POSITION_OF_AGENT, GOAL_POSITION_OF_AGENT, X, Y, UNBLOCKED_NUMBER,\
+    BLOCKED_NUMBER, TARGET_CANNOT_BE_REACHED_NUMBER
 
 
 def manhattan_distance(pos1: tuple, pos2: tuple):
@@ -41,10 +42,10 @@ def generate_grid_with_probability_p(p):
     """
     randomly_generated_array = np.random.uniform(low=0.0, high=1.0, size=NUM_ROWS * NUM_COLS).reshape(NUM_ROWS,
                                                                                                       NUM_COLS)
-    randomly_generated_array[STARTING_POSITION_OF_AGENT[0]][STARTING_POSITION_OF_AGENT[1]] = 0
-    randomly_generated_array[GOAL_POSITION_OF_AGENT[0]][GOAL_POSITION_OF_AGENT[1]] = 0
-    randomly_generated_array[randomly_generated_array < (1 - p)] = 0
-    randomly_generated_array[randomly_generated_array >= (1 - p)] = 1
+    randomly_generated_array[STARTING_POSITION_OF_AGENT[0]][STARTING_POSITION_OF_AGENT[1]] = UNBLOCKED_NUMBER
+    randomly_generated_array[GOAL_POSITION_OF_AGENT[0]][GOAL_POSITION_OF_AGENT[1]] = UNBLOCKED_NUMBER
+    randomly_generated_array[randomly_generated_array >= p] = UNBLOCKED_NUMBER
+    randomly_generated_array[randomly_generated_array < p] = BLOCKED_NUMBER
     return randomly_generated_array
 
 
@@ -186,6 +187,26 @@ def astar_search(maze: Maze, start_pos: tuple, goal_pos: tuple):
     return parents, num_explored_nodes
 
 
+def explore_neighbors(maze: Maze, maze_array: np.array, cur_pos: tuple):
+
+    if not maze.maze[cur_pos[0]][cur_pos[1]].is_confirmed:
+        maze.maze[cur_pos[0]][cur_pos[1]].is_confirmed = True
+        maze.maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER
+
+    maze.maze_numpy[cur_pos[0]][cur_pos[1]] += BLOCKED_NUMBER
+
+    for ind in range(len(X)):
+        neighbour = (cur_pos[0] + X[ind], cur_pos[1] + Y[ind])
+        if check(neighbour, NUM_COLS, NUM_ROWS):
+            if not maze.maze[neighbour[0]][neighbour[1]].is_confirmed:
+                maze.maze[neighbour[0]][neighbour[1]].is_confirmed = True
+                if maze_array[neighbour[0]][neighbour[1]] == BLOCKED_NUMBER:
+                    maze.maze[neighbour[0]][neighbour[1]].is_blocked = True
+                    maze.maze_numpy[neighbour[0]][neighbour[1]] = BLOCKED_NUMBER
+                else:
+                    maze.maze_numpy[neighbour[0]][neighbour[1]] = UNBLOCKED_NUMBER
+
+
 def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tuple, goal_pos: tuple,
                      is_field_of_view_explored: bool = True):
     """
@@ -205,11 +226,14 @@ def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tu
     total_explored_nodes = 0
     num_backtracks = 0
 
+    if is_field_of_view_explored:
+        explore_neighbors(maze, maze_array, start_pos)
+
     # Running the while loop until we will get a path from start_pos to goal_pos or we have figured out there is no path
     # from start_pos to goal_pos
     while True:
-        parents, num_explored_nodes = astar_search(maze, start_pos, goal_pos)
 
+        parents, num_explored_nodes = astar_search(maze, start_pos, goal_pos)
         # Adding up number of nodes explored (processed) in the last call to algorithm.
         total_explored_nodes += num_explored_nodes
 
@@ -218,7 +242,7 @@ def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tu
             data.append({
                 'current_pos': start_pos,
                 'input': maze.maze_numpy.copy(),
-                'output': 4
+                'output': TARGET_CANNOT_BE_REACHED_NUMBER
             })
 
             return list(), total_explored_nodes, num_backtracks
@@ -244,21 +268,14 @@ def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tu
         # iteration.
         while cur_pos != children[cur_pos]:
 
-            maze.maze_numpy[cur_pos[0]][cur_pos[1]] = 0
+            # maze.maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER
 
             # Explore the field of view and update the blocked nodes if there's any in the path.
-            if is_field_of_view_explored:
-                for ind in range(len(X)):
-                    neighbour = (cur_pos[0] + X[ind], cur_pos[1] + Y[ind])
-                    if check(neighbour, NUM_COLS, NUM_ROWS):
-                        if maze_array[neighbour[0]][neighbour[1]] == 1:
-                            maze.maze[neighbour[0]][neighbour[1]].is_blocked = True
-                            maze.maze_numpy[neighbour[0]][neighbour[1]] = 1
-                        else:
-                            maze.maze_numpy[neighbour[0]][neighbour[1]] = 0
+            if is_field_of_view_explored and start_pos != cur_pos:
+                explore_neighbors(maze, maze_array, cur_pos)
 
             # If we encounter any block in the path, we have to terminate the iteration
-            if maze_array[children[cur_pos][0]][children[cur_pos][1]] == 1:
+            if maze_array[children[cur_pos][0]][children[cur_pos][1]] == BLOCKED_NUMBER:
                 break
 
             data.append({
@@ -278,7 +295,7 @@ def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tu
 
             # Change the start node to last unblocked node and backtrack if it is set to any positive integer.
             maze.maze[children[cur_pos][0]][children[cur_pos][1]].is_blocked = True
-            maze.maze_numpy[children[cur_pos][0]][children[cur_pos][1]] = 1
+            maze.maze_numpy[children[cur_pos][0]][children[cur_pos][1]] = BLOCKED_NUMBER
             cur_pos = current_path[-1]
 
             final_paths.append(current_path)
