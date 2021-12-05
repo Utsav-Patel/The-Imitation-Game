@@ -7,6 +7,7 @@ from datetime import datetime
 import numpy as np
 import pickle
 import random
+import multiprocessing
 
 from src.Maze import Maze
 from helpers.helper import generate_grid_with_probability_p, repeated_forward, compute_heuristics, manhattan_distance
@@ -14,11 +15,6 @@ from constants import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, GOAL_POSIT
 
 # Just to check how much time the code took
 print('Start running this file at', datetime.now().strftime("%m-%d-%Y %H-%M-%S"))
-
-# Initialize attributes for this problem and compute heuristics
-maze = Maze(NUM_COLS, NUM_ROWS)
-compute_heuristics(maze, GOAL_POSITION_OF_AGENT, manhattan_distance)
-data = list()
 
 start_value_of_probability = 0.0
 end_value_of_probability = 0.80
@@ -29,42 +25,56 @@ num_times_run_for_each_probability = 2000
 # List of probability values
 list_of_probability_values = np.linspace(start_value_of_probability, end_value_of_probability, num_uniform_samples)
 
-# Iterate through each probability
-for probability_of_having_block in list_of_probability_values:
 
-    # Just printing so we know where we are at execution
-    print('Running for ', probability_of_having_block)
+def parallel_process_for_each_probability(p):
+    # Initialize attributes for this problem and compute heuristics
+    maze = Maze(NUM_COLS, NUM_ROWS)
+    compute_heuristics(maze, GOAL_POSITION_OF_AGENT, manhattan_distance)
+    data = list()
 
-    # Run the same code multiple times
-    for run_num in range(num_times_run_for_each_probability):
+    maze_array = generate_grid_with_probability_p(p)
 
-        # Generate maze randomly with each cell is blocked with probability of `probability_of_having_block`
-        maze_array = generate_grid_with_probability_p(probability_of_having_block)
-
-        maze.reset_except_h()
-        # Call to repeated forward A*
-        final_paths, total_explored_nodes = repeated_forward(maze, maze_array, data, STARTING_POSITION_OF_AGENT,
-                                                             GOAL_POSITION_OF_AGENT)[:2]
+    maze.reset_except_h()
+    # Call to repeated forward A*
+    repeated_forward(maze, maze_array, data, STARTING_POSITION_OF_AGENT, GOAL_POSITION_OF_AGENT)
+    return data
 
 
-categorise_list = [list(), list(), list(), list(), list()]
+if __name__ == "__main__":
+    # Used multiprocessing to parallelize processes
+    n_cores = int(multiprocessing.cpu_count())
+    print('Number of cores', n_cores)
+    p = multiprocessing.Pool(processes=n_cores)
+    final_data = list()
+    # Iterate through each probability
+    for probability_of_having_block in list_of_probability_values:
 
-for dct in data:
-    categorise_list[dct['output']].append(dct)
+        # Just printing so we know where we are at execution
+        print('Running for ', probability_of_having_block)
 
-minimum_class_size = INF
-for i in range(len(categorise_list)):
-    minimum_class_size = min(minimum_class_size, len(categorise_list[i]))
-    print("length of ", i, "th list: ", len(categorise_list[i]))
+        results = p.imap_unordered(parallel_process_for_each_probability, [probability_of_having_block] * num_times_run_for_each_probability)
 
-final_list = list()
+        for result in results:
+            final_data.append(result)
 
-for i in range(len(categorise_list)):
-    final_list = final_list + random.sample(categorise_list[i], minimum_class_size)
+    categorise_list = [list(), list(), list(), list(), list()]
 
-open_file = open(DATA_PATH, "wb")
-pickle.dump(final_list, open_file)
-open_file.close()
+    for dct in final_data:
+        categorise_list[dct['output']].append(dct)
+
+    minimum_class_size = INF
+    for i in range(len(categorise_list)):
+        minimum_class_size = min(minimum_class_size, len(categorise_list[i]))
+        print("length of ", i, "th list: ", len(categorise_list[i]))
+
+    final_list = list()
+
+    for i in range(len(categorise_list)):
+        final_list = final_list + random.sample(categorise_list[i], minimum_class_size)
+
+    open_file = open(DATA_PATH, "wb")
+    pickle.dump(final_list, open_file)
+    open_file.close()
 
 # Ending execution for this file. Now only plots are remaining
 print('Ending running this file at', datetime.now().strftime("%m-%d-%Y %H-%M-%S"))
