@@ -46,12 +46,11 @@ if __name__ == "__main__":
     print('Number of cores', n_cores)
     p = multiprocessing.Pool(processes=n_cores)
 
-    num = 1
-    category_frequencies = [0, 0, 0, 0, 0]
+    final_data = list()
+
     # Iterate through each probability
     for probability_of_having_block in list_of_probability_values:
 
-        final_data = list()
         # Just printing so we know where we are at execution
         print('Running for ', probability_of_having_block)
 
@@ -62,30 +61,24 @@ if __name__ == "__main__":
             for dct in result:
                 final_data.append(dct)
 
-        categorise_list = [list(), list(), list(), list(), list()]
+    categorise_list = [list(), list(), list(), list(), list()]
 
-        for dct in final_data:
-            categorise_list[dct['output']].append(dct)
-            category_frequencies[dct['output']] += 1
+    for dct in final_data:
+        categorise_list[dct['output']].append(dct)
 
-        # minimum_class_size = INF
-        # for i in range(len(categorise_list)):
-        #     minimum_class_size = min(minimum_class_size, len(categorise_list[i]))
-        #     print("length of ", i, "th list: ", len(categorise_list[i]))
-        #
-        # final_list = list()
-        #
-        # for i in range(len(categorise_list)):
-        #     final_list = final_list + random.sample(categorise_list[i], minimum_class_size)
+    minimum_class_size = INF
+    for i in range(len(categorise_list)):
+        minimum_class_size = min(minimum_class_size, len(categorise_list[i]))
+        print("length of ", i, "th list: ", len(categorise_list[i]))
 
-        import os
-        open_file = open(os.path.join(os.path.dirname(DATA_PATH), 'num_' + str(num), '.pkl'), "wb")
-        pickle.dump(categorise_list, open_file)
-        open_file.close()
-        num += 1
+    final_list = list()
 
-    print('Frequency of each category')
-    print(category_frequencies)
+    for i in range(len(categorise_list)):
+        final_list = final_list + random.sample(categorise_list[i], minimum_class_size)
+
+    open_file = open(DATA_PATH, "wb")
+    pickle.dump(final_list, open_file)
+    open_file.close()
 
 # Ending execution for this file. Now only plots are remaining
 print('Ending running this file at', datetime.now().strftime("%m-%d-%Y %H-%M-%S"))
