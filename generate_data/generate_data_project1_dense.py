@@ -19,7 +19,7 @@ print('Start running this file at', datetime.now().strftime("%m-%d-%Y %H-%M-%S")
 start_value_of_probability = 0.0
 end_value_of_probability = 0.80
 
-num_uniform_samples = 100
+num_uniform_samples = 81
 num_times_run_for_each_probability = 2000
 
 # List of probability values
@@ -45,36 +45,47 @@ if __name__ == "__main__":
     n_cores = int(multiprocessing.cpu_count())
     print('Number of cores', n_cores)
     p = multiprocessing.Pool(processes=n_cores)
-    final_data = list()
+
+    num = 1
+    category_frequencies = [0, 0, 0, 0, 0]
     # Iterate through each probability
     for probability_of_having_block in list_of_probability_values:
 
+        final_data = list()
         # Just printing so we know where we are at execution
         print('Running for ', probability_of_having_block)
 
-        results = p.imap_unordered(parallel_process_for_each_probability, [probability_of_having_block] * num_times_run_for_each_probability)
+        results = p.imap_unordered(parallel_process_for_each_probability, [probability_of_having_block] *
+                                   num_times_run_for_each_probability)
 
         for result in results:
-            final_data.append(result)
+            for dct in result:
+                final_data.append(dct)
 
-    categorise_list = [list(), list(), list(), list(), list()]
+        categorise_list = [list(), list(), list(), list(), list()]
 
-    for dct in final_data:
-        categorise_list[dct['output']].append(dct)
+        for dct in final_data:
+            categorise_list[dct['output']].append(dct)
+            category_frequencies[dct['output']] += 1
 
-    minimum_class_size = INF
-    for i in range(len(categorise_list)):
-        minimum_class_size = min(minimum_class_size, len(categorise_list[i]))
-        print("length of ", i, "th list: ", len(categorise_list[i]))
+        # minimum_class_size = INF
+        # for i in range(len(categorise_list)):
+        #     minimum_class_size = min(minimum_class_size, len(categorise_list[i]))
+        #     print("length of ", i, "th list: ", len(categorise_list[i]))
+        #
+        # final_list = list()
+        #
+        # for i in range(len(categorise_list)):
+        #     final_list = final_list + random.sample(categorise_list[i], minimum_class_size)
 
-    final_list = list()
+        import os
+        open_file = open(os.path.join(os.path.dirname(DATA_PATH), 'num_' + str(num), '.pkl'), "wb")
+        pickle.dump(categorise_list, open_file)
+        open_file.close()
+        num += 1
 
-    for i in range(len(categorise_list)):
-        final_list = final_list + random.sample(categorise_list[i], minimum_class_size)
-
-    open_file = open(DATA_PATH, "wb")
-    pickle.dump(final_list, open_file)
-    open_file.close()
+    print('Frequency of each category')
+    print(category_frequencies)
 
 # Ending execution for this file. Now only plots are remaining
 print('Ending running this file at', datetime.now().strftime("%m-%d-%Y %H-%M-%S"))
