@@ -1,9 +1,17 @@
+import os
+
+PROJECT_PATH = os.path.dirname(__file__)
+PROJECT_NO = 1
+ARCHITECTURE_TYPE = 'cnn'
+
 NUM_COLS = 20
 NUM_ROWS = 20
 INF = 1e9
 
-CHECKPOINT_FILEPATH = "../checkpoints/project1_dense/20x20/added_neighbors_added_num_visited_8000/cp-{epoch:04d}.ckpt"
-DATA_PATH = "../data/project1_dense/20x20/added_neighbors_num_visited_multiprocessing_8000.pkl"
+FILE_PREFIX = "20x20"
+CHECKPOINT_FILEPATH = os.path.join(PROJECT_PATH, "checkpoints", "project" + str(PROJECT_NO), ARCHITECTURE_TYPE,
+                                   FILE_PREFIX + "-{epoch:04d}.ckpt")
+DATA_PATH = os.path.join(PROJECT_PATH, "data", "project" + str(PROJECT_NO), ARCHITECTURE_TYPE, FILE_PREFIX + ".pkl")
 
 STARTING_POSITION_OF_AGENT = (0, 0)
 GOAL_POSITION_OF_AGENT = (NUM_ROWS - 1, NUM_COLS - 1)
@@ -12,9 +20,17 @@ X = [-1, 0, 1, 0]
 Y = [0, 1, 0, -1]
 
 UNVISITED_NUMBER = 0
-UNBLOCKED_NUMBER = 3
 BLOCKED_NUMBER = -1
 TARGET_CANNOT_BE_REACHED_NUMBER = 4
+
+if PROJECT_NO == 1:
+    if ARCHITECTURE_TYPE == 'dense':
+        UNBLOCKED_NUMBER = 3
+    elif ARCHITECTURE_TYPE == 'cnn':
+        UNBLOCKED_NUMBER = 1
+    else:
+        raise Exception("Architecture type must be dense or cnn")
+
 
 NEIGHBOR_WEIGHT = 25
 CURRENT_CELL_WEIGHT = 100

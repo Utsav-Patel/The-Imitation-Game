@@ -11,7 +11,8 @@ import multiprocessing
 
 from src.Maze import Maze
 from helpers.helper import generate_grid_with_probability_p, repeated_forward, compute_heuristics, manhattan_distance
-from constants import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, GOAL_POSITION_OF_AGENT, INF, DATA_PATH
+from constants import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, GOAL_POSITION_OF_AGENT, INF, DATA_PATH,\
+    PROJECT_NO, ARCHITECTURE_TYPE
 
 # Just to check how much time the code took
 print('Start running this file at', datetime.now().strftime("%m-%d-%Y %H-%M-%S"))
@@ -36,7 +37,8 @@ def parallel_process_for_each_probability(p):
 
     maze.reset_except_h()
     # Call to repeated forward A*
-    repeated_forward(maze, maze_array, data, STARTING_POSITION_OF_AGENT, GOAL_POSITION_OF_AGENT)
+    repeated_forward(maze, maze_array, data, STARTING_POSITION_OF_AGENT, GOAL_POSITION_OF_AGENT, project_no=PROJECT_NO,
+                     architecture_type=ARCHITECTURE_TYPE)
     return data
 
 

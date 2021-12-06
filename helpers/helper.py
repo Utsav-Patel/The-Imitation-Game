@@ -2,7 +2,7 @@ import numpy as np
 from sortedcontainers import SortedSet
 
 from src import Maze
-from constants import NUM_COLS, NUM_ROWS, STARTING_POSITION_OF_AGENT, GOAL_POSITION_OF_AGENT, X, Y, UNBLOCKED_NUMBER,\
+from constants import NUM_COLS, NUM_ROWS, STARTING_POSITION_OF_AGENT, GOAL_POSITION_OF_AGENT, X, Y, UNBLOCKED_NUMBER, \
     BLOCKED_NUMBER, TARGET_CANNOT_BE_REACHED_NUMBER
 
 
@@ -187,28 +187,45 @@ def astar_search(maze: Maze, start_pos: tuple, goal_pos: tuple):
     return parents, num_explored_nodes
 
 
-def explore_neighbors(maze: Maze, maze_array: np.array, cur_pos: tuple):
+def explore_neighbors(maze: Maze, maze_array: np.array, cur_pos: tuple, project_no: int = 1,
+                      architecture_type: str = 'dense'):
+    if project_no == 1 and architecture_type == 'dense':
+        if not maze.maze[cur_pos[0]][cur_pos[1]].is_confirmed:
+            maze.maze[cur_pos[0]][cur_pos[1]].is_confirmed = True
+            maze.maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER
 
-    if not maze.maze[cur_pos[0]][cur_pos[1]].is_confirmed:
+        maze.maze_numpy[cur_pos[0]][cur_pos[1]] += BLOCKED_NUMBER
+
+        for ind in range(len(X)):
+            neighbour = (cur_pos[0] + X[ind], cur_pos[1] + Y[ind])
+            if check(neighbour, NUM_COLS, NUM_ROWS):
+                if not maze.maze[neighbour[0]][neighbour[1]].is_confirmed:
+                    maze.maze[neighbour[0]][neighbour[1]].is_confirmed = True
+                    if maze_array[neighbour[0]][neighbour[1]] == BLOCKED_NUMBER:
+                        maze.maze[neighbour[0]][neighbour[1]].is_blocked = True
+                        maze.maze_numpy[neighbour[0]][neighbour[1]] = BLOCKED_NUMBER
+                    else:
+                        maze.maze_numpy[neighbour[0]][neighbour[1]] = UNBLOCKED_NUMBER
+
+    elif project_no == 1 and architecture_type == 'cnn':
         maze.maze[cur_pos[0]][cur_pos[1]].is_confirmed = True
         maze.maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER
+        maze.num_times_cell_visited[cur_pos[0]][cur_pos[1]] += 1
 
-    maze.maze_numpy[cur_pos[0]][cur_pos[1]] += BLOCKED_NUMBER
-
-    for ind in range(len(X)):
-        neighbour = (cur_pos[0] + X[ind], cur_pos[1] + Y[ind])
-        if check(neighbour, NUM_COLS, NUM_ROWS):
-            if not maze.maze[neighbour[0]][neighbour[1]].is_confirmed:
-                maze.maze[neighbour[0]][neighbour[1]].is_confirmed = True
-                if maze_array[neighbour[0]][neighbour[1]] == BLOCKED_NUMBER:
-                    maze.maze[neighbour[0]][neighbour[1]].is_blocked = True
-                    maze.maze_numpy[neighbour[0]][neighbour[1]] = BLOCKED_NUMBER
-                else:
-                    maze.maze_numpy[neighbour[0]][neighbour[1]] = UNBLOCKED_NUMBER
+        for ind in range(len(X)):
+            neighbour = (cur_pos[0] + X[ind], cur_pos[1] + Y[ind])
+            if check(neighbour, NUM_COLS, NUM_ROWS):
+                if not maze.maze[neighbour[0]][neighbour[1]].is_confirmed:
+                    maze.maze[neighbour[0]][neighbour[1]].is_confirmed = True
+                    if maze_array[neighbour[0]][neighbour[1]] == BLOCKED_NUMBER:
+                        maze.maze[neighbour[0]][neighbour[1]].is_blocked = True
+                        maze.maze_numpy[neighbour[0]][neighbour[1]] = BLOCKED_NUMBER
+                    else:
+                        maze.maze_numpy[neighbour[0]][neighbour[1]] = UNBLOCKED_NUMBER
 
 
 def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tuple, goal_pos: tuple,
-                     is_field_of_view_explored: bool = True):
+                     is_field_of_view_explored: bool = True, project_no: int = 1, architecture_type: str = 'dense'):
     """
     This is the repeated forward function which can be used with any algorithm (astar or bfs). This function will
     repeatedly call corresponding algorithm function until it reaches goal or finds out there is no path till goal.
@@ -227,7 +244,7 @@ def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tu
     num_backtracks = 0
 
     if is_field_of_view_explored:
-        explore_neighbors(maze, maze_array, start_pos)
+        explore_neighbors(maze, maze_array, start_pos, project_no, architecture_type)
 
     # Running the while loop until we will get a path from start_pos to goal_pos or we have figured out there is no path
     # from start_pos to goal_pos
@@ -239,11 +256,22 @@ def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tu
 
         # If goal_pos doesn't exist in parents which means path is not available so returning empty list.
         if goal_pos not in parents:
-            data.append({
-                'current_pos': start_pos,
-                'input': maze.maze_numpy.copy(),
-                'output': TARGET_CANNOT_BE_REACHED_NUMBER
-            })
+            if project_no == 1:
+                if architecture_type == 'dense':
+                    data.append({
+                        'current_pos': start_pos,
+                        'input': maze.maze_numpy.copy(),
+                        'output': TARGET_CANNOT_BE_REACHED_NUMBER
+                    })
+                elif architecture_type == 'cnn':
+                    data.append({
+                        'current_pos': start_pos,
+                        'input': maze.maze_numpy.copy(),
+                        'num_times_cell_visited': maze.num_times_cell_visited.copy(),
+                        'output': TARGET_CANNOT_BE_REACHED_NUMBER
+                    })
+                else:
+                    raise Exception("Architecture must be dense or cnn")
 
             return list(), total_explored_nodes, num_backtracks
 
@@ -272,17 +300,26 @@ def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tu
 
             # Explore the field of view and update the blocked nodes if there's any in the path.
             if is_field_of_view_explored and start_pos != cur_pos:
-                explore_neighbors(maze, maze_array, cur_pos)
+                explore_neighbors(maze, maze_array, cur_pos, project_no, architecture_type)
 
             # If we encounter any block in the path, we have to terminate the iteration
             if maze_array[children[cur_pos][0]][children[cur_pos][1]] == BLOCKED_NUMBER:
                 break
 
-            data.append({
-                'current_pos': cur_pos,
-                'input': maze.maze_numpy.copy(),
-                'output': find_output(cur_pos, children[cur_pos])
-            })
+            if (project_no == 1) and (architecture_type == 'dense'):
+                data.append({
+                    'current_pos': cur_pos,
+                    'input': maze.maze_numpy.copy(),
+                    'output': find_output(cur_pos, children[cur_pos])
+                })
+
+            if (project_no == 1) and (architecture_type == 'cnn'):
+                data.append({
+                    'current_pos': cur_pos,
+                    'input': maze.maze_numpy.copy(),
+                    'num_times_cell_visited': maze.num_times_cell_visited.copy(),
+                    'output': find_output(cur_pos, children[cur_pos])
+                })
 
             cur_pos = children[cur_pos]
             current_path.append(cur_pos)
