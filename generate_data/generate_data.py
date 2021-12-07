@@ -43,29 +43,6 @@ def parallel_process_for_each_probability(p):
     return data
 
 
-def update_data(data: list):
-    if PROJECT_NO == 1:
-        if ARCHITECTURE_TYPE == 'dense':
-            return data
-        elif ARCHITECTURE_TYPE == 'cnn':
-            final = list()
-            for ind in range(len(data)):
-                position = np.zeros((NUM_ROWS, NUM_COLS))
-                position[data[ind]['current_pos'][0]][data[ind]['current_pos'][1]] = CURRENT_CELL_WEIGHT
-                for ind2 in range(len(X)):
-                    neighbor = (data[ind]['current_pos'][0] + X[ind2], data[ind]['current_pos'][1] + Y[ind2])
-                    if check(neighbor, NUM_ROWS, NUM_COLS):
-                        position[neighbor[0]][neighbor[1]] = NEIGHBOR_WEIGHT
-                final.append({
-                    'input': np.stack(((data[ind]['input'] % 100) - 1, np.floor(data[ind]['input']/100), position)),
-                    'output': data[ind]['output']
-                })
-            return final
-
-        else:
-            raise Exception("Architecture type must be dense or cnn")
-
-
 if __name__ == "__main__":
     # Used multiprocessing to parallelize processes
     n_cores = int(multiprocessing.cpu_count())
@@ -100,7 +77,7 @@ if __name__ == "__main__":
     final_list = list()
 
     for i in range(len(categorise_list)):
-        final_list = final_list + update_data(random.sample(categorise_list[i], minimum_class_size))
+        final_list = final_list + random.sample(categorise_list[i], minimum_class_size)
 
     open_file = open(DATA_PATH, "wb")
     pickle.dump(final_list, open_file)

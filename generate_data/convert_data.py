@@ -44,7 +44,7 @@ if __name__ == "__main__":
     results = p.imap_unordered(parallel_process, loaded_list)
 
     open_file = open(os.path.join(os.path.dirname(DATA_PATH), '20x20_final.pkl'), "wb")
-    pickle.dump(results, open_file)
+    pickle.dump(list(results), open_file)
     open_file.close()
 
 # Ending execution for this file. Now only plots are remaining
