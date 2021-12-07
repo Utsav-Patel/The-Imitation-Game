@@ -68,20 +68,6 @@ def find_output(current_position: tuple, next_position: tuple):
             return ind
 
     raise Exception("Invalid Input")
-    # if current_position[0] != next_position[0]:
-    #     if current_position[0] == next_position[0] + 1:
-    #         return 1
-    #     elif current_position[0] + 1 == next_position[0]:
-    #         return 3
-    #     else:
-    #         raise Exception("Invalid Input")
-    # else:
-    #     if current_position[1] == next_position[1] + 1:
-    #         return 4
-    #     elif current_position[1] + 1 == next_position[1]:
-    #         return 2
-    #     else:
-    #         raise Exception("Invalid Input")
 
 
 def astar_search(maze: Maze, start_pos: tuple, goal_pos: tuple):

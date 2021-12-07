@@ -1,7 +1,8 @@
 import tensorflow as tf
+from tensorflow.keras import layers, models
 
 
-def create_model_project1_agent_10x10():
+def create_model_project1_dense_10x10():
     model = tf.keras.models.Sequential([
         # tf.keras.layers.Flatten(input_shape=(28, 28)),
         tf.keras.layers.Dense(2048, activation='relu', input_shape=(100,)),
@@ -28,7 +29,7 @@ def create_model_project1_agent_10x10():
     return model
 
 
-def create_model_project1_agent_20x20():
+def create_model_project1_dense_20x20():
     model = tf.keras.models.Sequential([
         # tf.keras.layers.Flatten(input_shape=(28, 28)),
         tf.keras.layers.Dense(4096, activation='relu', input_shape=(400,)),
@@ -42,6 +43,29 @@ def create_model_project1_agent_20x20():
         tf.keras.layers.Dense(16, activation='relu'),
         tf.keras.layers.Dense(5, activation='softmax'),
     ])
+
+    loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
+    adam = tf.keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False,
+                                    name='Adam')
+
+    model.compile(optimizer=adam,
+                  loss=loss_fn,
+                  metrics=['accuracy'])
+
+    return model
+
+
+def create_model_project1_cnn_20x20():
+
+    model = models.Sequential()
+    model.add(layers.Conv2D(32, (3, 3), padding='same', activation='relu', input_shape=(3, 20, 20)))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(64, (3, 3), padding='same', activation='relu'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(64, (3, 3), padding='same', activation='relu'))
+    model.add(layers.Flatten())
+    model.add(layers.Dense(128, activation='relu'))
+    model.add(layers.Dense(5, activation='softmax'))
 
     loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
     adam = tf.keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False,
