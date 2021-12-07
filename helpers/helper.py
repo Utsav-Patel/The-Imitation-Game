@@ -266,8 +266,8 @@ def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tu
                 elif architecture_type == 'cnn':
                     data.append({
                         'current_pos': start_pos,
-                        'input': maze.maze_numpy.copy(),
-                        'num_times_cell_visited': maze.num_times_cell_visited.copy(),
+                        'input': maze.maze_numpy.copy() + 100 * maze.num_times_cell_visited.copy() + 1,
+                        # 'num_times_cell_visited': maze.num_times_cell_visited.copy(),
                         'output': TARGET_CANNOT_BE_REACHED_NUMBER
                     })
                 else:
@@ -316,8 +316,8 @@ def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tu
             if (project_no == 1) and (architecture_type == 'cnn'):
                 data.append({
                     'current_pos': cur_pos,
-                    'input': maze.maze_numpy.copy(),
-                    'num_times_cell_visited': maze.num_times_cell_visited.copy(),
+                    'input': maze.maze_numpy.copy() + 100 * maze.num_times_cell_visited.copy() + 1,
+                    # 'num_times_cell_visited': maze.num_times_cell_visited.copy(),
                     'output': find_output(cur_pos, children[cur_pos])
                 })
 
