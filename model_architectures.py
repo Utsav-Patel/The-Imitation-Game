@@ -59,9 +59,9 @@ def create_model_project1_cnn_20x20():
 
     model = models.Sequential()
     model.add(layers.Conv2D(32, (3, 3), padding='same', activation='relu', input_shape=(3, 20, 20)))
-    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.MaxPooling2D((2, 2), data_format="channels_first"))
     model.add(layers.Conv2D(64, (3, 3), padding='same', activation='relu'))
-    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.MaxPooling2D((2, 2), data_format="channels_first"))
     model.add(layers.Conv2D(64, (3, 3), padding='same', activation='relu'))
     model.add(layers.Flatten())
     model.add(layers.Dense(128, activation='relu'))
