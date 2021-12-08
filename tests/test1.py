@@ -7,12 +7,12 @@ from constants import CHECKPOINT_FILEPATH, NUM_ROWS, NUM_COLS, STARTING_POSITION
     NEIGHBOR_WEIGHT, CURRENT_CELL_WEIGHT, TARGET_CANNOT_BE_REACHED_NUMBER, BLOCKED_NUMBER
 from src.Maze import Maze
 from helpers.helper import generate_grid_with_probability_p, check, explore_neighbors
-from model_architectures import create_model_project1_agent_10x10
+from model_architectures import create_model_project1_dense_10x10
 
 
 checkpoint_dir = os.path.dirname(CHECKPOINT_FILEPATH)
 latest = tf.train.latest_checkpoint(checkpoint_dir)
-model = create_model_project1_agent_10x10()
+model = create_model_project1_dense_10x10()
 model.load_weights(latest)
 
 current_position = STARTING_POSITION_OF_AGENT

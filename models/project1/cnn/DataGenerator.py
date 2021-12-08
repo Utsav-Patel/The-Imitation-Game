@@ -39,4 +39,4 @@ class DataGenerator(keras.utils.Sequence):
             np.random.shuffle(self.indexes)
 
     def __data_generation(self, indexes):
-        return self.input[indexes], keras.utils.to_categorical(self.output[indexes], num_classes=self.n_classes)
+        return self.input[indexes], self.output[indexes]
