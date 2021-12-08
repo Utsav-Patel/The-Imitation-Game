@@ -8,7 +8,7 @@ NUM_COLS = 20
 NUM_ROWS = 20
 INF = 1e9
 
-FILE_PREFIX = "20x20_final"
+FILE_PREFIX = "20x20"
 CHECKPOINT_FILEPATH = os.path.join(PROJECT_PATH, "checkpoints", "project" + str(PROJECT_NO), ARCHITECTURE_TYPE,
                                    FILE_PREFIX + "-{epoch:04d}.ckpt")
 DATA_PATH = os.path.join(PROJECT_PATH, "data", "project" + str(PROJECT_NO), ARCHITECTURE_TYPE, FILE_PREFIX + ".pkl")

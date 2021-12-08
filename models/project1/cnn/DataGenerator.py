@@ -1,5 +1,6 @@
 import numpy as np
 from tensorflow import keras
+from helpers.helper import pre_process_input
 
 
 class DataGenerator(keras.utils.Sequence):
@@ -29,8 +30,11 @@ class DataGenerator(keras.utils.Sequence):
 
         # Generate data
         X, y = self.__data_generation(indexes)
+        final_x = list()
+        for dct in X:
+            final_x.append(pre_process_input(X['input'], X['current_pos'], project_no=1, architecture_type='cnn'))
 
-        return X, y
+        return final_x, y
 
     def on_epoch_end(self):
         'Updates indexes after each epoch'

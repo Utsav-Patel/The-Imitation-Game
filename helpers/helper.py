@@ -3,7 +3,7 @@ from sortedcontainers import SortedSet
 
 from src import Maze
 from constants import NUM_COLS, NUM_ROWS, STARTING_POSITION_OF_AGENT, GOAL_POSITION_OF_AGENT, X, Y, UNBLOCKED_NUMBER, \
-    BLOCKED_NUMBER, TARGET_CANNOT_BE_REACHED_NUMBER
+    BLOCKED_NUMBER, TARGET_CANNOT_BE_REACHED_NUMBER, CURRENT_CELL_WEIGHT, NEIGHBOR_WEIGHT
 
 
 def manhattan_distance(pos1: tuple, pos2: tuple):
@@ -171,6 +171,20 @@ def astar_search(maze: Maze, start_pos: tuple, goal_pos: tuple):
                         parents[neighbour] = current_node[1]
 
     return parents, num_explored_nodes
+
+
+def pre_process_input(array: np.array, current_position: tuple, project_no: int = 1, architecture_type: str = 'dense'):
+    if project_no == 1:
+        if architecture_type == 'dense':
+            pass
+        elif architecture_type == 'cnn':
+            position = np.zeros((NUM_ROWS, NUM_COLS))
+            position[current_position[0]][current_position[1]] = CURRENT_CELL_WEIGHT
+            for ind2 in range(len(X)):
+                neighbor = (current_position[0] + X[ind2], current_position[1] + Y[ind2])
+                if check(neighbor, NUM_ROWS, NUM_COLS):
+                    position[neighbor[0]][neighbor[1]] = NEIGHBOR_WEIGHT
+            return np.stack(((array % 100) - 1, np.floor(array / 100), position))
 
 
 def explore_neighbors(maze: Maze, maze_array: np.array, cur_pos: tuple, project_no: int = 1,

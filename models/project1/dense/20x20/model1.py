@@ -5,7 +5,7 @@ import tensorflow as tf
 from tensorflow.keras.utils import to_categorical
 
 from constants import NUM_ROWS, NUM_COLS, CHECKPOINT_FILEPATH, DATA_PATH, X, Y, NEIGHBOR_WEIGHT, CURRENT_CELL_WEIGHT
-from model_architectures import create_model_project1_agent_20x20
+from model_architectures import create_model_project1_dense_20x20
 from helpers.helper import check
 
 open_file = open(DATA_PATH, "rb")
@@ -22,9 +22,6 @@ for dct in loaded_list:
     input_list.append(dct['input'])
     output_list.append(dct['output'])
     current_position_list.append(dct['current_pos'])
-    # if dct['output'] == 4:
-    #     print(dct)
-    #     input()
 
 for ind in range(len(input_list)):
     input_list[ind][current_position_list[ind][0]][current_position_list[ind][1]] = CURRENT_CELL_WEIGHT
@@ -55,7 +52,7 @@ print("y validation shape", y_val.shape)
 print("X test shape", X_test.shape)
 print("y test shape", y_test.shape)
 
-model = create_model_project1_agent_20x20()
+model = create_model_project1_dense_20x20()
 model.summary()
 
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
