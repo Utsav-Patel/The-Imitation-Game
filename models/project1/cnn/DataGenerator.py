@@ -32,9 +32,9 @@ class DataGenerator(keras.utils.Sequence):
         X, y = self.__data_generation(indexes)
         final_x = list()
         for dct in X:
-            final_x.append(pre_process_input(X['input'], X['current_pos'], project_no=1, architecture_type='cnn'))
+            final_x.append(pre_process_input(dct['input'], dct['current_pos'], project_no=1, architecture_type='cnn'))
 
-        return final_x, y
+        return np.array(final_x), y
 
     def on_epoch_end(self):
         'Updates indexes after each epoch'
@@ -43,4 +43,4 @@ class DataGenerator(keras.utils.Sequence):
             np.random.shuffle(self.indexes)
 
     def __data_generation(self, indexes):
-        return self.input[indexes], self.output[indexes]
+        return list(map(self.input.__getitem__, indexes)), self.output[indexes]
