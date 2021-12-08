@@ -6,6 +6,7 @@ from tensorflow.keras.utils import to_categorical
 
 from constants import CHECKPOINT_FILEPATH, DATA_PATH
 from model_architectures import create_model_project1_cnn_20x20
+from DataGenerator import DataGenerator
 
 open_file = open(DATA_PATH, "rb")
 loaded_list = pickle.load(open_file)
@@ -44,6 +45,9 @@ print("y validation shape", y_val.shape)
 print("X test shape", X_test.shape)
 print("y test shape", y_test.shape)
 
+training_generator = DataGenerator(X_train, y_train)
+# validation_generator = DataGenerator(X_val, y_val)
+
 model = create_model_project1_cnn_20x20()
 model.summary()
 
@@ -56,7 +60,7 @@ model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     save_freq='epoch'
 )
 
-history = model.fit(X_train, y_train, epochs=20, batch_size=128, validation_data=(X_val, y_val),
+history = model.fit(training_generator, validation_data=(X_val, y_val), use_multiprocessing=True, workers=75,
                     callbacks=[model_checkpoint_callback])
 
 print(history.history)
