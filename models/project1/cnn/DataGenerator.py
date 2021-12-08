@@ -16,7 +16,7 @@ class DataGenerator(keras.utils.Sequence):
         self.indexes = np.arange(len(self.input))
         if self.shuffle:
             np.random.shuffle(self.indexes)
-        self.on_epoch_end()
+        # self.on_epoch_end()
 
     def __len__(self):
         'Denotes the number of batches per epoch'
