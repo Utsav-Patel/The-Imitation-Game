@@ -2,7 +2,7 @@ import random
 import tensorflow as tf
 import os
 import numpy as np
-import multiprocessing
+# import multiprocessing
 from datetime import datetime
 from numba import cuda
 
@@ -50,9 +50,9 @@ def parallel_process_for_each_probability(p):
 
 if __name__ == "__main__":
     # Used multiprocessing to parallelize processes
-    n_cores = int(multiprocessing.cpu_count())
-    print('Number of cores', n_cores)
-    p = multiprocessing.Pool(processes=n_cores)
+    # n_cores = int(multiprocessing.cpu_count())
+    # print('Number of cores', n_cores)
+    # p = multiprocessing.Pool(processes=n_cores)
 
     final_data = list()
 
@@ -62,8 +62,12 @@ if __name__ == "__main__":
         # Just printing so we know where we are at execution
         print('Running for ', probability_of_having_block)
 
-        results = p.imap_unordered(parallel_process_for_each_probability, [probability_of_having_block] *
-                                   num_times_run_for_each_probability)
+        results = list()
+
+        for ind in range(num_times_run_for_each_probability):
+            results.append(parallel_process_for_each_probability(probability_of_having_block))
+            device = cuda.get_current_device()
+            device.reset()
 
         print('Probability:', probability_of_having_block)
         print(list(results))
