@@ -13,7 +13,7 @@ INF = 1e9
 
 FILE_PREFIX = "50x50"
 CHECKPOINT_FILEPATH = os.path.join(PROJECT_PATH, "checkpoints", "project" + str(PROJECT_NO), ARCHITECTURE_TYPE,
-                                   FILE_PREFIX, FILE_PREFIX + "-{epoch:04d}.ckpt")
+                                   FILE_PREFIX + "_less_parameters", FILE_PREFIX + "-{epoch:04d}.ckpt")
 DATA_PATH = os.path.join(PROJECT_PATH, "data", "project" + str(PROJECT_NO), ARCHITECTURE_TYPE, FILE_PREFIX + ".pkl")
 
 STATE_OF_THE_ART_MODEL_PROJECT1_DENSE_CHECKPOINT_PATH = os.path.join(PROJECT_PATH, "checkpoints", "project1", "dense")
