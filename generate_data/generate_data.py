@@ -63,7 +63,7 @@ if __name__ == "__main__":
             for dct in result:
                 final_data.append(dct)
 
-    categorise_list = [list(), list(), list(), list(), list()]
+    categorise_list = [list(), list(), list(), list()]
 
     for dct in final_data:
         categorise_list[dct['output']].append(dct)

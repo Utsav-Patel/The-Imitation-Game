@@ -278,23 +278,23 @@ def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tu
 
         # If goal_pos doesn't exist in parents which means path is not available so returning empty list.
         if goal_pos not in parents:
-            if data is not None:
-                if project_no == 1:
-                    if architecture_type == 'dense':
-                        data.append({
-                            'current_pos': start_pos,
-                            'input': maze.maze_numpy.copy(),
-                            'output': TARGET_CANNOT_BE_REACHED_NUMBER
-                        })
-                    elif architecture_type == 'cnn':
-                        data.append({
-                            'current_pos': start_pos,
-                            'input': maze.maze_numpy.copy() + 100 * maze.num_times_cell_visited.copy() + 1,
-                            # 'num_times_cell_visited': maze.num_times_cell_visited.copy(),
-                            'output': TARGET_CANNOT_BE_REACHED_NUMBER
-                        })
-                    else:
-                        raise Exception("Architecture must be dense or cnn")
+            # if data is not None:
+            #     if project_no == 1:
+            #         if architecture_type == 'dense':
+            #             data.append({
+            #                 'current_pos': start_pos,
+            #                 'input': maze.maze_numpy.copy(),
+            #                 'output': TARGET_CANNOT_BE_REACHED_NUMBER
+            #             })
+            #         elif architecture_type == 'cnn':
+            #             data.append({
+            #                 'current_pos': start_pos,
+            #                 'input': maze.maze_numpy.copy() + 100 * maze.num_times_cell_visited.copy() + 1,
+            #                 # 'num_times_cell_visited': maze.num_times_cell_visited.copy(),
+            #                 'output': TARGET_CANNOT_BE_REACHED_NUMBER
+            #             })
+            #         else:
+            #             raise Exception("Architecture must be dense or cnn")
 
             return final_paths, 0
 
