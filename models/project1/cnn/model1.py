@@ -5,7 +5,7 @@ import tensorflow as tf
 from tensorflow.keras.utils import to_categorical
 
 from constants import CHECKPOINT_FILEPATH, DATA_PATH
-from model_architectures import create_model_project1_cnn_20x20
+from model_architectures import create_model_project1_cnn_50x50
 from DataGenerator import DataGenerator
 
 open_file = open(DATA_PATH, "rb")
@@ -47,7 +47,7 @@ training_generator = DataGenerator(X_train, y_train)
 validation_generator = DataGenerator(X_val, y_val)
 testing_generator = DataGenerator(X_test, y_test)
 
-model = create_model_project1_cnn_20x20()
+model = create_model_project1_cnn_50x50()
 model.summary()
 
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
@@ -59,7 +59,7 @@ model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     save_freq='epoch'
 )
 
-history = model.fit(training_generator, epochs=20, validation_data=validation_generator, use_multiprocessing=True,
+history = model.fit(training_generator, epochs=30, validation_data=validation_generator, use_multiprocessing=True,
                     workers=75, callbacks=[model_checkpoint_callback])
 
 print(history.history)

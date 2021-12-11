@@ -1,11 +1,13 @@
 import numpy as np
 from tensorflow import keras
 from helpers.helper import pre_process_input
+from constants import TRAINED_MODEL_NUM_COLS, TRAINED_MODEL_NUM_ROWS
 
 
 class DataGenerator(keras.utils.Sequence):
     'Generates data for Keras'
-    def __init__(self, input_data, output_data, batch_size=128, dim=(3, 20, 20), n_channels=1, n_classes=5, shuffle=True):
+    def __init__(self, input_data, output_data, batch_size=512, dim=(3, TRAINED_MODEL_NUM_ROWS, TRAINED_MODEL_NUM_COLS),
+                 n_channels=1, n_classes=4, shuffle=True):
         'Initialization'
         self.input = input_data
         self.output = output_data
