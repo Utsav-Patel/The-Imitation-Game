@@ -1,14 +1,11 @@
 import random
 import numpy as np
-import os
-import tensorflow as tf
 from sortedcontainers import SortedSet
-from numba import cuda
 
-from src import Maze
+from src.Maze import Maze
 from constants import NUM_COLS, NUM_ROWS, STARTING_POSITION_OF_AGENT, GOAL_POSITION_OF_AGENT, X, Y, UNBLOCKED_NUMBER, \
-    BLOCKED_NUMBER, TARGET_CANNOT_BE_REACHED_NUMBER, CURRENT_CELL_WEIGHT, NEIGHBOR_WEIGHT
-from model_architectures import create_model_project1_dense_20x20, create_model_project1_cnn_20x20
+    BLOCKED_NUMBER, TARGET_CANNOT_BE_REACHED_NUMBER, CURRENT_CELL_WEIGHT, NEIGHBOR_WEIGHT, TRAINED_MODEL_NUM_ROWS,\
+    TRAINED_MODEL_NUM_COLS, UNBLOCKED_WEIGHT
 
 
 def manhattan_distance(pos1: tuple, pos2: tuple):
@@ -199,16 +196,16 @@ def pre_process_input(array: np.array, current_position: tuple, project_no: int 
             array[current_position[0]][current_position[1]] = CURRENT_CELL_WEIGHT
             for ind2 in range(len(X)):
                 neighbour = (current_position[0] + X[ind2], current_position[1] + Y[ind2])
-                if check(neighbour, NUM_ROWS, NUM_COLS):
+                if check(neighbour, TRAINED_MODEL_NUM_ROWS, TRAINED_MODEL_NUM_ROWS):
                     array[neighbour[0]][neighbour[1]] *= NEIGHBOR_WEIGHT
             return array.reshape(1, -1)
 
         elif architecture_type == 'cnn':
-            position = np.zeros((NUM_ROWS, NUM_COLS))
+            position = np.zeros((TRAINED_MODEL_NUM_ROWS, TRAINED_MODEL_NUM_COLS))
             position[current_position[0]][current_position[1]] = CURRENT_CELL_WEIGHT
             for ind2 in range(len(X)):
                 neighbor = (current_position[0] + X[ind2], current_position[1] + Y[ind2])
-                if check(neighbor, NUM_ROWS, NUM_COLS):
+                if check(neighbor, TRAINED_MODEL_NUM_ROWS, TRAINED_MODEL_NUM_COLS):
                     position[neighbor[0]][neighbor[1]] = NEIGHBOR_WEIGHT
             return np.expand_dims(np.stack(((array % 100) - 1, np.floor(array / 100), position)), axis=0)
 
@@ -218,7 +215,7 @@ def explore_neighbors(maze: Maze, maze_array: np.array, cur_pos: tuple, project_
     if project_no == 1 and architecture_type == 'dense':
         if not maze.maze[cur_pos[0]][cur_pos[1]].is_confirmed:
             maze.maze[cur_pos[0]][cur_pos[1]].is_confirmed = True
-            maze.maze_numpy[cur_pos[0]][cur_pos[1]] = 3 * UNBLOCKED_NUMBER
+            maze.maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_WEIGHT * UNBLOCKED_NUMBER
 
         maze.maze_numpy[cur_pos[0]][cur_pos[1]] += BLOCKED_NUMBER
 
@@ -231,7 +228,7 @@ def explore_neighbors(maze: Maze, maze_array: np.array, cur_pos: tuple, project_
                         maze.maze[neighbour[0]][neighbour[1]].is_blocked = True
                         maze.maze_numpy[neighbour[0]][neighbour[1]] = BLOCKED_NUMBER
                     else:
-                        maze.maze_numpy[neighbour[0]][neighbour[1]] = 3 * UNBLOCKED_NUMBER
+                        maze.maze_numpy[neighbour[0]][neighbour[1]] = UNBLOCKED_WEIGHT * UNBLOCKED_NUMBER
 
     elif project_no == 1 and architecture_type == 'cnn':
         maze.maze[cur_pos[0]][cur_pos[1]].is_confirmed = True
@@ -267,7 +264,6 @@ def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tu
     # defining the following two attributes to find which would be useful to return values
     final_paths = list()
     total_explored_nodes = 0
-    num_backtracks = 0
 
     if is_field_of_view_explored:
         explore_neighbors(maze, maze_array, start_pos, project_no, architecture_type)
@@ -300,7 +296,7 @@ def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tu
                     else:
                         raise Exception("Architecture must be dense or cnn")
 
-            return list(), total_explored_nodes, num_backtracks
+            return final_paths, 0
 
         # parents contains parent of each node through path from start_pos to goal_pos. To store path from start_pos to
         # goal_pos, we need to store child of each node starting from start_pos.
@@ -356,7 +352,7 @@ def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tu
         # If we are able to find the goal state, we should return the path and total explored nodes.
         if cur_pos == goal_pos:
             final_paths.append(current_path)
-            return final_paths, total_explored_nodes, num_backtracks
+            return final_paths, 1
         else:
 
             # Change the start node to last unblocked node and backtrack if it is set to any positive integer.
@@ -368,75 +364,190 @@ def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tu
             start_pos = cur_pos
 
 
-def bootstraping(current_position: tuple, num_rows: int, num_columns: int, num_samples: int):
-    x_start = max(0, current_position[0] - 20 + 1)
-    x_end = min(current_position[0], max(num_rows - 20, 0))
+def bootstraping(maze: Maze, current_position: tuple, num_rows: int, num_columns: int, num_samples: int):
+    x_start = max(0, current_position[0] - TRAINED_MODEL_NUM_ROWS + 1)
+    x_end = min(current_position[0], max(num_rows - TRAINED_MODEL_NUM_ROWS, 0))
 
-    y_start = max(0, current_position[1] - 20 + 1)
-    y_end = min(current_position[1], max(num_columns - 20, 0))
+    y_start = max(0, current_position[1] - TRAINED_MODEL_NUM_COLS + 1)
+    y_end = min(current_position[1], max(num_columns - TRAINED_MODEL_NUM_COLS, 0))
 
     starting_positions = list()
     for ind in range(num_samples):
-        starting_positions.append((random.randint(x_start, x_end), random.randint(y_start, y_end)))
+        x, y = random.randint(x_start, x_end), random.randint(y_start, y_end)
+        while maze.maze[x][y].is_blocked or \
+                maze.maze[x + TRAINED_MODEL_NUM_ROWS - 1][y + TRAINED_MODEL_NUM_COLS - 1].is_blocked:
+            x, y = random.randint(x_start, x_end), random.randint(y_start, y_end)
+        starting_positions.append((x, y))
     return starting_positions
 
 
-def ml_agent_dfs(maze: Maze, full_maze: np.array, start_position: tuple, goal_position: tuple,
-                 checkpoint_directory: str, project_no: int = 1, architecture_type: str = 'dense'):
-    # checkpoint_dir = os.path.dirname(checkpoint_directory)
-    latest = tf.train.latest_checkpoint(checkpoint_directory)
-
-    if project_no == 1:
-        if architecture_type == 'dense':
-            model = create_model_project1_dense_20x20()
-        elif architecture_type == 'cnn':
-            model = create_model_project1_cnn_20x20()
+def make_action(maze: Maze, model, current_position: tuple, num_samples: int, project_no: int = 1,
+                architecture_type='dense'):
+    start_positions = bootstraping(maze, current_position, NUM_ROWS, NUM_COLS, num_samples)
+    print('Starting positions')
+    print(start_positions)
+    action = np.zeros(5)
+    for start_pos in start_positions:
+        if project_no == 1:
+            if architecture_type == 'dense':
+                array = maze.maze_numpy[start_pos[0]: start_pos[0] + TRAINED_MODEL_NUM_ROWS,
+                        start_pos[1]: start_pos[1] + TRAINED_MODEL_NUM_COLS].copy()
+            elif architecture_type == 'cnn':
+                array = maze.maze_numpy[start_pos[0]: start_pos[0] + TRAINED_MODEL_NUM_ROWS,
+                        start_pos[1]: start_pos[1] + TRAINED_MODEL_NUM_COLS].copy() + \
+                        100 * maze.num_times_cell_visited[start_pos[0]: start_pos[0] + TRAINED_MODEL_NUM_ROWS,
+                              start_pos[1]: start_pos[1] + TRAINED_MODEL_NUM_COLS].copy() + 1
+            else:
+                array = None
         else:
-            raise Exception('current architecture type is not available')
-    else:
-        raise Exception('project number is not available')
+            array = None
+        action += np.array(model.predict(pre_process_input(array, (current_position[0] - start_pos[0],
+                                                                   current_position[1] - start_pos[1]),
+                                                           project_no=project_no,
+                                                           architecture_type=architecture_type))[0])
 
-    model.load_weights(latest)
+    return random.choices(np.arange(len(action)), action / np.sum(action))[0]
+
+
+def repeated_forward_astar(maze_array: np.array, start_pos: tuple, goal_pos: tuple, model1, model2,
+                           is_field_of_view_explored: bool = True):
+
+    final_paths = list()
+    total_actions = 0
+    dense_valid_actions = 0
+    cnn_valid_actions = 0
+
+    mazes = [Maze(NUM_ROWS, NUM_COLS), Maze(NUM_ROWS, NUM_COLS)]
+
+    if is_field_of_view_explored:
+        explore_neighbors(mazes[0], maze_array, start_pos, 1, 'dense')
+        explore_neighbors(mazes[1], maze_array, start_pos, 1, 'cnn')
+
+    # Running the while loop until we will get a path from start_pos to goal_pos or we have figured out there is no path
+    # from start_pos to goal_pos
+    while True:
+
+        parents = astar_search(mazes[0], start_pos, goal_pos)[0]
+
+        # If goal_pos doesn't exist in parents which means path is not available so returning empty list.
+        if goal_pos not in parents:
+            action1 = make_action(mazes[0], model1, start_pos, 5, 1, 'dense')
+            action2 = make_action(mazes[1], model2, start_pos, 5, 1, 'cnn')
+
+            output1 = 1
+            output2 = 1
+
+            if action1 == TARGET_CANNOT_BE_REACHED_NUMBER:
+                output1 = 0
+            if action2 == TARGET_CANNOT_BE_REACHED_NUMBER:
+                output2 = 0
+
+            return total_actions, dense_valid_actions, cnn_valid_actions, 0, output1, output2
+        # parents contains parent of each node through path from start_pos to goal_pos. To store path from start_pos to
+        # goal_pos, we need to store child of each node starting from start_pos.
+        cur_pos = goal_pos
+        children = dict()
+
+        children[cur_pos] = cur_pos
+
+        # Storing child of each node so we can iterate from start_pos to goal_pos
+        while cur_pos != parents[cur_pos]:
+            children[parents[cur_pos]] = cur_pos
+            cur_pos = parents[cur_pos]
+
+        # Setting current position to starting position so we can start iterating from start_pos
+        cur_pos = start_pos
+
+        current_path = [cur_pos]
+
+        # Iterating from start_pos to goal_pos if we won't get any blocks in between otherwise we are terminating the
+        # iteration.
+        while cur_pos != children[cur_pos]:
+
+            # maze.maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER
+
+            # Explore the field of view and update the blocked nodes if there's any in the path.
+            if is_field_of_view_explored and start_pos != cur_pos:
+                explore_neighbors(mazes[0], maze_array, cur_pos, 1, 'dense')
+                explore_neighbors(mazes[1], maze_array, cur_pos, 1, 'cnn')
+
+            # If we encounter any block in the path, we have to terminate the iteration
+            if maze_array[children[cur_pos][0]][children[cur_pos][1]] == BLOCKED_NUMBER:
+                break
+
+            action1 = make_action(mazes[0], model1, start_pos, 5, 1, 'dense')
+            action2 = make_action(mazes[1], model2, start_pos, 5, 1, 'cnn')
+
+            total_actions += 1
+            if action1 == find_output(cur_pos, children[cur_pos]):
+                dense_valid_actions += 1
+            if action2 == find_output(cur_pos, children[cur_pos]):
+                cnn_valid_actions += 1
+            cur_pos = children[cur_pos]
+            current_path.append(cur_pos)
+
+        # If we are able to find the goal state, we should return the path and total explored nodes.
+        if cur_pos == goal_pos:
+            final_paths.append(current_path)
+            return total_actions, dense_valid_actions, cnn_valid_actions, 1, 1, 1
+        else:
+
+            # Change the start node to last unblocked node and backtrack if it is set to any positive integer.
+            mazes[0].maze[children[cur_pos][0]][children[cur_pos][1]].is_blocked = True
+            mazes[0].maze_numpy[children[cur_pos][0]][children[cur_pos][1]] = BLOCKED_NUMBER
+
+            mazes[1].maze[children[cur_pos][0]][children[cur_pos][1]].is_blocked = True
+            mazes[1].maze_numpy[children[cur_pos][0]][children[cur_pos][1]] = BLOCKED_NUMBER
+            cur_pos = current_path[-1]
+
+            final_paths.append(current_path)
+            start_pos = cur_pos
+
+
+def ml_agent_dfs(maze: Maze, full_maze: np.array, start_position: tuple, goal_position: tuple, project_no: int = 1,
+                 architecture_type: str = 'dense', model=None):
+    # checkpoint_dir = os.path.dirname(checkpoint_directory)
+    # latest = tf.train.latest_checkpoint(checkpoint_directory)
+    #
+    # if project_no == 1:
+    #     if architecture_type == 'dense':
+    #         model = create_model_project1_dense_20x20()
+    #     elif architecture_type == 'cnn':
+    #         model = create_model_project1_cnn_20x20()
+    #     else:
+    #         raise Exception('current architecture type is not available')
+    # else:
+    #     raise Exception('project number is not available')
+    #
+    # model.load_weights(latest)
     current_position = start_position
-    num_samples = 10
+    num_samples = 5
     trajectory_length = 0
 
     while True:
         # Exploration
         explore_neighbors(maze, full_maze, current_position, project_no=project_no, architecture_type=architecture_type)
 
-        start_positions = bootstraping(current_position, NUM_ROWS, NUM_COLS, num_samples)
-        action = np.zeros(5)
-        for start_pos in start_positions:
-            if project_no == 1:
-                if architecture_type == 'dense':
-                    array = maze.maze_numpy[start_pos[0]: start_pos[0] + 20, start_pos[1]: start_pos[1] + 20].copy()
-                elif architecture_type == 'cnn':
-                    array = maze.maze_numpy[start_pos[0]: start_pos[0] + 20, start_pos[1]: start_pos[1] + 20].copy() + \
-                            100 * maze.num_times_cell_visited[start_pos[0]: start_pos[0] + 20,
-                                  start_pos[1]: start_pos[1] + 20].copy() + 1
-                else:
-                    array = None
-            else:
-                array = None
-            action += np.array(model.predict(pre_process_input(array, (current_position[0] - start_pos[0],
-                                                                       current_position[1] - start_pos[1]),
-                                                               project_no = project_no,
-                                                               architecture_type = architecture_type))[0])
+        action = make_action(maze, model, current_position, num_samples, project_no=project_no,
+                             architecture_type=architecture_type)
 
-        action = random.choices(np.arange(len(action)), action / np.sum(action))[0]
         if action == TARGET_CANNOT_BE_REACHED_NUMBER:
-            return trajectory_length
+            print('Full maze')
+            print(full_maze)
+            print(current_position)
+            print('current maze')
+            print(maze.maze_numpy)
+            input()
+            return trajectory_length, 0
         next_position = (current_position[0] + X[action], current_position[1] + Y[action])
         trajectory_length += 1
         if check(next_position, NUM_COLS, NUM_ROWS):
             if full_maze[next_position[0]][next_position[1]] == BLOCKED_NUMBER:
-                return -2
+                return -2, 0
             else:
                 current_position = next_position
         else:
-            return -1
+            return -1, 0
 
         if current_position == goal_position:
-            print('Reached for this achitecture', project_no, architecture_type)
-            return trajectory_length
+            return trajectory_length, 1
