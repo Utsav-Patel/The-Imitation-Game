@@ -10,10 +10,9 @@ import random
 import multiprocessing
 
 from src.Maze import Maze
-from helpers.helper import generate_grid_with_probability_p, repeated_forward, compute_heuristics, manhattan_distance, \
-    check
+from helpers.helper import generate_grid_with_probability_p, repeated_forward, compute_heuristics, manhattan_distance
 from constants import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, GOAL_POSITION_OF_AGENT, INF, DATA_PATH, \
-    PROJECT_NO, ARCHITECTURE_TYPE, CURRENT_CELL_WEIGHT, NEIGHBOR_WEIGHT, X, Y
+    PROJECT_NO, ARCHITECTURE_TYPE
 
 # Just to check how much time the code took
 print('Start running this file at', datetime.now().strftime("%m-%d-%Y %H-%M-%S"))
@@ -22,7 +21,7 @@ start_value_of_probability = 0.0
 end_value_of_probability = 0.80
 
 num_uniform_samples = 81
-num_times_run_for_each_probability = 7000
+num_times_run_for_each_probability = 2000
 
 # List of probability values
 list_of_probability_values = np.linspace(start_value_of_probability, end_value_of_probability, num_uniform_samples)

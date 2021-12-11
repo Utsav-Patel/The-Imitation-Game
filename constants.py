@@ -4,14 +4,14 @@ PROJECT_PATH = os.path.dirname(__file__)
 PROJECT_NO = 1
 ARCHITECTURE_TYPE = 'cnn'
 
-NUM_COLS = 25
-NUM_ROWS = 25
+NUM_COLS = 50
+NUM_ROWS = 50
 
 TRAINED_MODEL_NUM_ROWS = 20
 TRAINED_MODEL_NUM_COLS = 20
 INF = 1e9
 
-FILE_PREFIX = "20x20"
+FILE_PREFIX = "50x50"
 CHECKPOINT_FILEPATH = os.path.join(PROJECT_PATH, "checkpoints", "project" + str(PROJECT_NO), ARCHITECTURE_TYPE,
                                    FILE_PREFIX + "-{epoch:04d}.ckpt")
 DATA_PATH = os.path.join(PROJECT_PATH, "data", "project" + str(PROJECT_NO), ARCHITECTURE_TYPE, FILE_PREFIX + ".pkl")
