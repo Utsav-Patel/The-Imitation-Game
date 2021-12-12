@@ -10,8 +10,8 @@ import numpy as np
 
 from helpers.agent6 import forward_execution
 from src.Agent import Agent
-from helpers.helper import examine_and_propagate_probability, parent_to_child_dict
-
+from helpers.Agent6helper import examine_and_propagate_probability, parent_to_child_dict, length_of_path_from_source_to_all_nodes
+from constants import ONE_PROBABILITY, INF
 
 # Blindfolded agent's class
 class Agent6(Agent):
@@ -19,7 +19,7 @@ class Agent6(Agent):
         super().__init__()
 
     # Override execution method of Agent class
-    def execution(self, full_maze: np.array, target_pos: tuple = None):
+    def execution(self, full_maze: np.array, data, target_pos: tuple = None):
         """
         Agent 6,7, and 8's execution method
         :param full_maze: origin maze array
@@ -31,16 +31,16 @@ class Agent6(Agent):
         self.children = parent_to_child_dict(self.parents, self.current_estimated_goal)
 
         # Agent will move along the planned path to reach current estimated goal
-        current_path = forward_execution(self.maze, self.false_negative_rates, full_maze,
+        current_path = forward_execution(self.maze, self.false_negative_rates,self.maze_numpy, full_maze,
                                                          self.current_position, self.current_estimated_goal,
-                                                         self.children)[:2]
+                                                         self.children, data, self.probability_of_containing_target)[:2]
         # Pick the last element of the current path to get agent's current position
         self.current_position = current_path[-1]
 
         # Append current path to final path
         self.final_paths.append(current_path)
 
-    def examine(self, target_pos):
+    def examine(self, target_pos, data, project_no = 3, architecture_type = 'dense'):
         """
         Method is used to examine the agent's current cell if it has reached to current estimated goal otherwise set
         next cell to block because we can't be able to reach because of that.
@@ -53,4 +53,16 @@ class Agent6(Agent):
                                                             self.children[self.current_position])
         if self.current_position == self.current_estimated_goal:
             self.num_examinations += 1
+            probability_of_finding_target = np.multiply(self.probability_of_containing_target,
+                                                ONE_PROBABILITY - self.false_negative_rates)
+            distance_array = length_of_path_from_source_to_all_nodes(self.maze, self.current_pos)
+            distance_array[self.current_pos[0]][self.current_pos[1]] = INF
+            utility_function = np.divide(probability_of_finding_target, distance_array)
+            if data is not None:
+                        if (project_no == 3) and (architecture_type == 'dense'):
+                            data.append({
+                                'current_pos': self.current_position,
+                                'input': np.stack((self.maze_numpy.copy(), self.false_negative_rates.copy(), utility_function.copy())),
+                                'output': 4
+                            })
         return is_target_found

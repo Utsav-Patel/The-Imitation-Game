@@ -18,6 +18,7 @@ class Cell:
         self.h = INF
         self.f = INF
 
+        self.is_visited = False
         self.is_blocked = False
         self.is_visited = False
         self.is_confirmed = False
@@ -44,7 +45,7 @@ class Cell:
     def reset_except_h(self, default_probability: float = 0.0):
         self.g = INF
         self.f = INF
-
+        self.is_visited = False
         self.is_blocked = False
         self.is_visited = False
         self.is_confirmed = False

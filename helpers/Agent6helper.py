@@ -12,7 +12,8 @@ from sortedcontainers import SortedSet
 from queue import Queue
 
 from constants import NUM_COLS, NUM_ROWS, X, Y, INF, ONE_PROBABILITY, ZERO_PROBABILITY, STARTING_POSITION_OF_AGENT, \
-    FLAT_FALSE_NEGATIVE_RATE, HILLY_FALSE_NEGATIVE_RATE, FOREST_FALSE_NEGATIVE_RATE
+    FLAT_FALSE_NEGATIVE_RATE, HILLY_FALSE_NEGATIVE_RATE, FOREST_FALSE_NEGATIVE_RATE, BLOCKED_NUMBER, UNBLOCKED_NUMBER, \
+    UNBLOCKED_WEIGHT
 
 
 def check(current_position: tuple):
@@ -302,7 +303,7 @@ def astar_search(maze: list, start_pos: tuple, goal_pos: tuple):
     maze[start_pos[0]][start_pos[1]].f = maze[start_pos[0]][start_pos[1]].h
 
     # Assigning a random number to start position to the starting position and adding to visited nodes
-    node_to_random_number_mapping[start_pos] = random.uniform(0, 1)
+    node_to_random_number_mapping[start_pos] = 0
     visited_nodes.add(start_pos)
 
     # Add start position node into the sorted set. We are giving priority to f(n), h(n), and g(n) in the decreasing
@@ -343,7 +344,7 @@ def astar_search(maze: list, start_pos: tuple, goal_pos: tuple):
                     maze[neighbour[0]][neighbour[1]].h = manhattan_distance(neighbour, goal_pos)
                     maze[neighbour[0]][neighbour[1]].f = maze[neighbour[0]][neighbour[1]].g + \
                                                          maze[neighbour[0]][neighbour[1]].h
-                    node_to_random_number_mapping[neighbour] = random.uniform(0, 1)
+                    node_to_random_number_mapping[neighbour] = val
                     visited_nodes.add(neighbour)
                     sorted_set.add(((maze[neighbour[0]][neighbour[1]].f,
                                      maze[neighbour[0]][neighbour[1]].h, maze[neighbour[0]][neighbour[1]].g,
@@ -371,7 +372,7 @@ def astar_search(maze: list, start_pos: tuple, goal_pos: tuple):
                                   node_to_random_number_mapping[neighbour]), neighbour))
                         maze[neighbour[0]][neighbour[1]].g = neighbour_g
                         maze[neighbour[0]][neighbour[1]].f = neighbour_f
-                        node_to_random_number_mapping[neighbour] = random.uniform(0, 1)
+                        node_to_random_number_mapping[neighbour] = val
                         sorted_set.add(
                             ((maze[neighbour[0]][neighbour[1]].f,
                               maze[neighbour[0]][neighbour[1]].h, maze[neighbour[0]][neighbour[1]].g,
@@ -397,6 +398,7 @@ def compute_probability_when_agent_fails_to_find_target(probability_of_containin
 
     probability_of_containing_target /= probability_denominator
     probability_of_containing_target[current_pos[0]][current_pos[1]] = reduced_probability/probability_denominator
+
 
 
 def check_and_propagate_probability(probability_of_containing_target: np.array, false_negative_rates: np.array,
@@ -477,10 +479,11 @@ def examine_and_propagate_probability(maze, probability_of_containing_target, fa
         return False
     else:
         # Else examine node
-        return check_and_propagate_probability(probability_of_containing_target, false_negative_rates, node, target_pos)
+        return check_and_propagate_probability(probability_of_containing_target, false_negative_rates, node,
+                                               target_pos)
 
 
-def update_status(maze: list, false_negative_rates: np.ndarray, maze_array: np.array, cur_pos: tuple):
+def update_status(maze: list, false_negative_rates: np.ndarray, maze_numpy:np.ndarray, maze_array: np.array, cur_pos: tuple):
     """
     Function is used to update status of current cell of agent
     :param maze: agent's maze object
@@ -490,23 +493,33 @@ def update_status(maze: list, false_negative_rates: np.ndarray, maze_array: np.a
     :return:
     """
     # Change in agent's maze according to full maze
-    if maze_array[cur_pos[0]][cur_pos[1]] == 1:
-        maze[cur_pos[0]][cur_pos[1]].is_blocked = True
-    elif maze_array[cur_pos[0]][cur_pos[1]] == 2:
-        false_negative_rates[cur_pos[0]][cur_pos[1]] = FLAT_FALSE_NEGATIVE_RATE
-        maze[cur_pos[0]][cur_pos[1]].is_blocked = False
-    elif maze_array[cur_pos[0]][cur_pos[1]] == 3:
-        false_negative_rates[cur_pos[0]][cur_pos[1]] = HILLY_FALSE_NEGATIVE_RATE
-        maze[cur_pos[0]][cur_pos[1]].is_blocked = False
-    elif maze_array[cur_pos[0]][cur_pos[1]] == 4:
-        false_negative_rates[cur_pos[0]][cur_pos[1]] = FOREST_FALSE_NEGATIVE_RATE
-        maze[cur_pos[0]][cur_pos[1]].is_blocked = False
+    if not maze_array[cur_pos[0]][cur_pos[1]].is_visited:
+        if maze_array[cur_pos[0]][cur_pos[1]] == 1:
+            maze[cur_pos[0]][cur_pos[1]].is_blocked = True
+            maze[cur_pos[0]][cur_pos[1]].is_visited = True
+            maze_numpy[cur_pos[0]][cur_pos[1]] = BLOCKED_NUMBER
+        elif maze_array[cur_pos[0]][cur_pos[1]] == 2:
+            false_negative_rates[cur_pos[0]][cur_pos[1]] = FLAT_FALSE_NEGATIVE_RATE
+            maze[cur_pos[0]][cur_pos[1]].is_blocked = False
+            maze[cur_pos[0]][cur_pos[1]].is_visited = True
+            maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER * UNBLOCKED_WEIGHT
+        elif maze_array[cur_pos[0]][cur_pos[1]] == 3:
+            false_negative_rates[cur_pos[0]][cur_pos[1]] = HILLY_FALSE_NEGATIVE_RATE
+            maze[cur_pos[0]][cur_pos[1]].is_blocked = False
+            maze[cur_pos[0]][cur_pos[1]].is_visited = True
+            maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER * UNBLOCKED_WEIGHT
+        elif maze_array[cur_pos[0]][cur_pos[1]] == 4:
+            false_negative_rates[cur_pos[0]][cur_pos[1]] = FOREST_FALSE_NEGATIVE_RATE
+            maze[cur_pos[0]][cur_pos[1]].is_blocked = False
+            maze[cur_pos[0]][cur_pos[1]].is_visited = True
+            maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER * UNBLOCKED_WEIGHT
+        else:
+            raise Exception("Invalid value in maze_array")
     else:
-        raise Exception("Invalid value in maze_array")
+        maze_numpy[cur_pos[0]][cur_pos[1]] += BLOCKED_NUMBER
 
-
-def forward_execution(maze: list, false_negative_rates: np.ndarray, maze_array: np.array, start_pos: tuple,
-                      goal_pos: tuple, children: dict):
+def forward_execution(maze: list, false_negative_rates: np.ndarray, maze_numpy:np.ndarray, maze_array: np.array, start_pos: tuple,
+                      goal_pos: tuple, children: dict, data: list, p_of_containing_target: np.ndarray, project_no: int = 3, architecture_type: str = 'dense'):
     """
     This is the repeated forward function which can be used with any algorithm (astar or bfs). This function will
     repeatedly call corresponding algorithm function until it reaches goal or finds out there is no path till goal.
@@ -530,7 +543,14 @@ def forward_execution(maze: list, false_negative_rates: np.ndarray, maze_array: 
     while True:
 
         # Update the status of the current cell
-        update_status(maze, false_negative_rates, maze_array, cur_pos)
+        update_status(maze, false_negative_rates, maze_numpy, maze_array, cur_pos)
+        if data is not None:
+                if (project_no == 3) and (architecture_type == 'dense'):
+                    data.append({
+                        'current_pos': cur_pos,
+                        'input': np.stack((maze.maze_numpy.copy(), false_negative_rates.copy(), p_of_containing_target.copy())),
+                        'output': find_output(cur_pos, children[cur_pos])
+                    })
         if cur_pos == children[cur_pos]:
             break
         # If we encounter any block in the path, we have to terminate the iteration
@@ -542,5 +562,14 @@ def forward_execution(maze: list, false_negative_rates: np.ndarray, maze_array: 
     if cur_pos != goal_pos:
         # Change the start node to last unblocked node and backtrack if it is set to any positive integer.
         maze[children[cur_pos][0]][children[cur_pos][1]].is_blocked = True
-
+        maze_numpy[children[cur_pos][0]][children[cur_pos][1]] = BLOCKED_NUMBER
+        
     return current_path
+
+
+def find_output(current_position: tuple, next_position: tuple):
+    for ind in range(len(X)):
+        if (current_position[0] + X[ind], current_position[1] + Y[ind]) == next_position:
+            return ind
+
+    raise Exception("Invalid Input")
