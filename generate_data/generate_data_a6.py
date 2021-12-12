@@ -28,8 +28,7 @@ def find_the_target(num: int):
     """
     print('Running for:', num)
 
-    agents = [6]
-    x = list()
+    agents = [8]
     data = list()
     # Keep generating grid and target position until we will get valid pair of it
     while True:
@@ -71,21 +70,19 @@ def find_the_target(num: int):
                 agent.planning(agent.current_estimated_goal)
 
             # Execute on the generated path
-            agent.execution(random_maze)
+            agent.execution(random_maze, data)
 
             # Examine the current cell
             target_found = agent.examine(target_pos)
 
-        # Find total number of movements
-        movements = compute_explored_cells_from_path(agent.final_paths)
-        x.append([agent.num_examinations, movements])
+
 
         # End the execution of the current run
         print('ending agent', agent_num)
         now = datetime.now()
         dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
         print("date and time =", dt_string)
-    return x
+    return data
 
 
 if __name__ == "__main__":

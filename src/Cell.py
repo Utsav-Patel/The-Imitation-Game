@@ -18,6 +18,7 @@ class Cell:
         self.h = INF
         self.f = INF
 
+        self.is_visited = False
         self.is_blocked = False
         self.four_neighbors = list()
         self.eight_neighbors = list()
@@ -31,7 +32,7 @@ class Cell:
     def reset_except_h(self):
         self.g = INF
         self.f = INF
-
+        self.is_visited = False
         self.is_blocked = False
 
         #self.previous_examinations = 0

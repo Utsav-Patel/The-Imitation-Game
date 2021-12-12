@@ -19,7 +19,7 @@ class Agent6(Agent):
         super().__init__()
 
     # Override execution method of Agent class
-    def execution(self, full_maze: np.array, target_pos: tuple = None):
+    def execution(self, full_maze: np.array, data, target_pos: tuple = None):
         """
         Agent 6,7, and 8's execution method
         :param full_maze: origin maze array
@@ -31,9 +31,9 @@ class Agent6(Agent):
         self.children = parent_to_child_dict(self.parents, self.current_estimated_goal)
 
         # Agent will move along the planned path to reach current estimated goal
-        current_path = forward_execution(self.maze, self.false_negative_rates, full_maze,
+        current_path = forward_execution(self.maze, self.false_negative_rates,self.maze_numpy, full_maze,
                                                          self.current_position, self.current_estimated_goal,
-                                                         self.children)[:2]
+                                                         self.children, data, self.probability_of_containing_target)[:2]
         # Pick the last element of the current path to get agent's current position
         self.current_position = current_path[-1]
 
