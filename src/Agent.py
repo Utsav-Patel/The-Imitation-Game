@@ -30,14 +30,14 @@ class Agent(ABC):
                 cell_list.append(Cell())
                 for ind in range(len(X)):
                     neighbor = (row + X[ind], col + Y[ind])
-                    if check(neighbor):
+                    if check(neighbor, NUM_ROWS, NUM_COLS):
                         cell_list[col].four_neighbors.append(neighbor)
                 for ind in range(-1, 2):
                     for ind2 in range(-1, 2):
                         neighbor = (row + ind, col + ind2)
                         if neighbor == (row, col):
                             continue
-                        if check(neighbor):
+                        if check(neighbor, NUM_ROWS, NUM_COLS):
                             cell_list[col].eight_neighbors.append(neighbor)
             self.maze.append(cell_list)
 
@@ -50,6 +50,13 @@ class Agent(ABC):
         self.children = dict()
         self.current_estimated_goal = list()
         self.num_examinations = 0
+
+        self.num_confirmed_cells = 0
+        self.num_confirmed_blocked_cells = 0
+
+        self.num_astar_calls = 0
+        self.num_bumps = 0
+        self.num_early_termination = 0
 
         # set list of global threshold
         #self.global_threshold = list()
@@ -90,6 +97,13 @@ class Agent(ABC):
         self.parents = dict()
         self.children = dict()
         self.current_estimated_goal = list()
+
+        self.num_confirmed_cells = 0
+        self.num_confirmed_blocked_cells = 0
+
+        self.num_astar_calls = 0
+        self.num_bumps = 0
+        self.num_early_termination = 0
 
         for row in range(NUM_ROWS):
             for col in range(NUM_COLS):
