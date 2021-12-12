@@ -480,7 +480,7 @@ def examine_and_propagate_probability(maze, probability_of_containing_target, fa
         return check_and_propagate_probability(probability_of_containing_target, false_negative_rates, node, target_pos)
 
 
-def update_status(maze: list, false_negative_rates: np.ndarray, maze_array: np.array, cur_pos: tuple):
+def update_status(maze: list, false_negative_rates: np.ndarray, maze_numpy:np.ndarray, maze_array: np.array, cur_pos: tuple):
     """
     Function is used to update status of current cell of agent
     :param maze: agent's maze object
@@ -492,6 +492,7 @@ def update_status(maze: list, false_negative_rates: np.ndarray, maze_array: np.a
     # Change in agent's maze according to full maze
     if maze_array[cur_pos[0]][cur_pos[1]] == 1:
         maze[cur_pos[0]][cur_pos[1]].is_blocked = True
+        maze_numpy[cur_pos[0]][cur_pos[1]] = BLOCKED_NUMBER
     elif maze_array[cur_pos[0]][cur_pos[1]] == 2:
         false_negative_rates[cur_pos[0]][cur_pos[1]] = FLAT_FALSE_NEGATIVE_RATE
         maze[cur_pos[0]][cur_pos[1]].is_blocked = False
@@ -505,7 +506,7 @@ def update_status(maze: list, false_negative_rates: np.ndarray, maze_array: np.a
         raise Exception("Invalid value in maze_array")
 
 
-def forward_execution(maze: list, false_negative_rates: np.ndarray, maze_array: np.array, start_pos: tuple,
+def forward_execution(maze: list, false_negative_rates: np.ndarray, maze_numpy:np.ndarray, maze_array: np.array, start_pos: tuple,
                       goal_pos: tuple, children: dict):
     """
     This is the repeated forward function which can be used with any algorithm (astar or bfs). This function will
@@ -530,7 +531,7 @@ def forward_execution(maze: list, false_negative_rates: np.ndarray, maze_array: 
     while True:
 
         # Update the status of the current cell
-        update_status(maze, false_negative_rates, maze_array, cur_pos)
+        update_status(maze, false_negative_rates, maze_numpy, maze_array, cur_pos)
         if cur_pos == children[cur_pos]:
             break
         # If we encounter any block in the path, we have to terminate the iteration

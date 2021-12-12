@@ -14,8 +14,8 @@ import math
 from constants import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, X, Y, ACCURACY_TO_ACHIEVE, \
     FLAT_FALSE_NEGATIVE_RATE, HILLY_FALSE_NEGATIVE_RATE, FOREST_FALSE_NEGATIVE_RATE, UNVISITED_NUMBER
 from src.Cell import Cell
-from helpers.helper import astar_search, check
-from helpers.helper import compute_current_estimated_goal
+from helpers.Agent6helper import astar_search, check
+from helpers.Agent6helper import compute_current_estimated_goal
 
 
 # Agent class

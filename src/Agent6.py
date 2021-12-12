@@ -10,7 +10,7 @@ import numpy as np
 
 from helpers.agent6 import forward_execution
 from src.Agent import Agent
-from helpers.helper import examine_and_propagate_probability, parent_to_child_dict
+from helpers.Agent6helper import examine_and_propagate_probability, parent_to_child_dict
 
 
 # Blindfolded agent's class
