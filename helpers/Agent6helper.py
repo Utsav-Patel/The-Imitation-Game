@@ -400,6 +400,7 @@ def compute_probability_when_agent_fails_to_find_target(probability_of_containin
     probability_of_containing_target[current_pos[0]][current_pos[1]] = reduced_probability/probability_denominator
 
 
+
 def check_and_propagate_probability(probability_of_containing_target: np.array, false_negative_rates: np.array,
                                     current_pos: tuple, target_pos: tuple):
     """
@@ -478,7 +479,8 @@ def examine_and_propagate_probability(maze, probability_of_containing_target, fa
         return False
     else:
         # Else examine node
-        return check_and_propagate_probability(probability_of_containing_target, false_negative_rates, node, target_pos)
+        return check_and_propagate_probability(probability_of_containing_target, false_negative_rates, node,
+                                               target_pos)
 
 
 def update_status(maze: list, false_negative_rates: np.ndarray, maze_numpy:np.ndarray, maze_array: np.array, cur_pos: tuple):
