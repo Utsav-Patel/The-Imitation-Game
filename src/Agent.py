@@ -12,7 +12,7 @@ import numpy as np
 import math
 
 from constants import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, X, Y, ACCURACY_TO_ACHIEVE, \
-    FLAT_FALSE_NEGATIVE_RATE, HILLY_FALSE_NEGATIVE_RATE, FOREST_FALSE_NEGATIVE_RATE
+    FLAT_FALSE_NEGATIVE_RATE, HILLY_FALSE_NEGATIVE_RATE, FOREST_FALSE_NEGATIVE_RATE, UNVISITED_NUMBER
 from src.Cell import Cell
 from helpers.helper import astar_search, check
 from helpers.helper import compute_current_estimated_goal
@@ -45,6 +45,7 @@ class Agent(ABC):
         self.current_position = STARTING_POSITION_OF_AGENT
         self.probability_of_containing_target = np.zeros((NUM_ROWS, NUM_COLS)) + (1.0 / (NUM_ROWS * NUM_COLS))
         self.false_negative_rates = np.zeros((NUM_ROWS, NUM_COLS)) + 0.5
+        self.maze_numpy = np.zeros((NUM_ROWS, NUM_COLS)) + UNVISITED_NUMBER
         self.final_paths = list()
         self.parents = dict()
         self.children = dict()

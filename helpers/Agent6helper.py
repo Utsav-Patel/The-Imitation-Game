@@ -302,7 +302,7 @@ def astar_search(maze: list, start_pos: tuple, goal_pos: tuple):
     maze[start_pos[0]][start_pos[1]].f = maze[start_pos[0]][start_pos[1]].h
 
     # Assigning a random number to start position to the starting position and adding to visited nodes
-    node_to_random_number_mapping[start_pos] = random.uniform(0, 1)
+    node_to_random_number_mapping[start_pos] = 0
     visited_nodes.add(start_pos)
 
     # Add start position node into the sorted set. We are giving priority to f(n), h(n), and g(n) in the decreasing
@@ -343,7 +343,7 @@ def astar_search(maze: list, start_pos: tuple, goal_pos: tuple):
                     maze[neighbour[0]][neighbour[1]].h = manhattan_distance(neighbour, goal_pos)
                     maze[neighbour[0]][neighbour[1]].f = maze[neighbour[0]][neighbour[1]].g + \
                                                          maze[neighbour[0]][neighbour[1]].h
-                    node_to_random_number_mapping[neighbour] = random.uniform(0, 1)
+                    node_to_random_number_mapping[neighbour] = val
                     visited_nodes.add(neighbour)
                     sorted_set.add(((maze[neighbour[0]][neighbour[1]].f,
                                      maze[neighbour[0]][neighbour[1]].h, maze[neighbour[0]][neighbour[1]].g,
@@ -371,7 +371,7 @@ def astar_search(maze: list, start_pos: tuple, goal_pos: tuple):
                                   node_to_random_number_mapping[neighbour]), neighbour))
                         maze[neighbour[0]][neighbour[1]].g = neighbour_g
                         maze[neighbour[0]][neighbour[1]].f = neighbour_f
-                        node_to_random_number_mapping[neighbour] = random.uniform(0, 1)
+                        node_to_random_number_mapping[neighbour] = val
                         sorted_set.add(
                             ((maze[neighbour[0]][neighbour[1]].f,
                               maze[neighbour[0]][neighbour[1]].h, maze[neighbour[0]][neighbour[1]].g,
