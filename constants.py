@@ -11,7 +11,7 @@ TRAINED_MODEL_NUM_ROWS = 50
 TRAINED_MODEL_NUM_COLS = 50
 INF = 1e9
 
-FILE_PREFIX = "20x20_new"
+FILE_PREFIX = "20x20_10_to_35_probability_and_16000_each"
 CHECKPOINT_FILEPATH = os.path.join(PROJECT_PATH, "checkpoints", "project" + str(PROJECT_NO), ARCHITECTURE_TYPE,
                                    FILE_PREFIX, FILE_PREFIX + "-{epoch:04d}.ckpt")
 DATA_PATH = os.path.join(PROJECT_PATH, "data", "project" + str(PROJECT_NO), ARCHITECTURE_TYPE, FILE_PREFIX + ".pkl")
