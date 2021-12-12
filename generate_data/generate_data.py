@@ -17,11 +17,11 @@ from constants import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, GOAL_POSIT
 # Just to check how much time the code took
 print('Start running this file at', datetime.now().strftime("%m-%d-%Y %H-%M-%S"))
 
-start_value_of_probability = 0.10
-end_value_of_probability = 0.35
+start_value_of_probability = 0.17
+end_value_of_probability = 0.30
 
-num_uniform_samples = 26
-num_times_run_for_each_probability = 16000
+num_uniform_samples = 14
+num_times_run_for_each_probability = 1000
 
 # List of probability values
 list_of_probability_values = np.linspace(start_value_of_probability, end_value_of_probability, num_uniform_samples)

@@ -2,7 +2,7 @@ import os
 
 PROJECT_PATH = os.path.dirname(__file__)
 PROJECT_NO = 1
-ARCHITECTURE_TYPE = 'cnn'
+ARCHITECTURE_TYPE = 'dense'
 
 NUM_COLS = 20
 NUM_ROWS = 20
@@ -11,10 +11,15 @@ TRAINED_MODEL_NUM_ROWS = 50
 TRAINED_MODEL_NUM_COLS = 50
 INF = 1e9
 
-FILE_PREFIX = "20x20_10_to_35_probability_and_16000_each"
+FILE_PREFIX = "20x20"
+FILE_SUFFIX = "validation_plus_test"
+
 CHECKPOINT_FILEPATH = os.path.join(PROJECT_PATH, "checkpoints", "project" + str(PROJECT_NO), ARCHITECTURE_TYPE,
                                    FILE_PREFIX, FILE_PREFIX + "-{epoch:04d}.ckpt")
-DATA_PATH = os.path.join(PROJECT_PATH, "data", "project" + str(PROJECT_NO), ARCHITECTURE_TYPE, FILE_PREFIX + ".pkl")
+
+DATA_PATH = os.path.join(PROJECT_PATH, "data", "project" + str(PROJECT_NO), ARCHITECTURE_TYPE, FILE_PREFIX, FILE_SUFFIX + ".pkl")
+VALIDATION_TEST_PATH = os.path.join(PROJECT_PATH, "data", "project" + str(PROJECT_NO), ARCHITECTURE_TYPE, FILE_PREFIX,
+                                    FILE_SUFFIX + ".pkl")
 
 STATE_OF_THE_ART_MODEL_PROJECT1_DENSE_CHECKPOINT_PATH = os.path.join(PROJECT_PATH, "checkpoints", "project1", "dense",
                                                                      FILE_PREFIX)
