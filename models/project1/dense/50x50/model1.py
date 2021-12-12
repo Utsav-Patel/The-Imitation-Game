@@ -12,6 +12,7 @@ from helpers.helper import check
 
 def prepare_dataset(path):
 
+    print('Loading data from', path)
     open_file = open(path, "rb")
     loaded_list = pickle.load(open_file)
     open_file.close()

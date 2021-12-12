@@ -41,7 +41,7 @@ def create_model_project1_dense_20x20():
         tf.keras.layers.Dense(64, activation='relu'),
         tf.keras.layers.Dense(32, activation='relu'),
         tf.keras.layers.Dense(16, activation='relu'),
-        tf.keras.layers.Dense(5, activation='softmax'),
+        tf.keras.layers.Dense(4, activation='softmax'),
     ])
 
     loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
