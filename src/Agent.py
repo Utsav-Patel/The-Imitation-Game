@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 import math
 
-from constants import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, X, Y, ACCURACY_TO_ACHIEVE, \
+from constants import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, X, Y, \
     FLAT_FALSE_NEGATIVE_RATE, HILLY_FALSE_NEGATIVE_RATE, FOREST_FALSE_NEGATIVE_RATE, UNVISITED_NUMBER
 from src.Cell import Cell
 from helpers.Agent6helper import astar_search, check

@@ -36,7 +36,7 @@ def find_the_target(num: int):
         target_pos = generate_target_position(random_maze)
         if length_of_path_from_source_to_goal(random_maze, STARTING_POSITION_OF_AGENT, target_pos) != INF:
             break
-
+    print(target_pos)
     # Run agent 6,7, and 8 for the above generate grid and target position
     for agent_num in agents:
 
@@ -73,7 +73,7 @@ def find_the_target(num: int):
             agent.execution(random_maze, data)
 
             # Examine the current cell
-            target_found = agent.examine(target_pos)
+            target_found = agent.examine(target_pos, data)
 
 
 
@@ -84,19 +84,24 @@ def find_the_target(num: int):
         print("date and time =", dt_string)
     return data
 
+result = find_the_target(1)
+for item in result:
+    print('Current_pos = ', item['current_pos'],' Output = ', item['output'])
+    
+#if __name__ == "__main__":
 
-if __name__ == "__main__":
-
-    start_time = time.time()
+    #start_time = time.time()
 
     # Used multiprocessing to parallelize processes
-    n_cores = int(multiprocessing.cpu_count())
-    print('Number of cores', n_cores)
-    p = multiprocessing.Pool(processes=n_cores)
+    #n_cores = int(multiprocessing.cpu_count())
+    #print('Number of cores', n_cores)
+   # p = multiprocessing.Pool(processes=n_cores)
 
-    results = p.imap_unordered(find_the_target, range(NUM_ITERATIONS))
-    print(results)
+    #results = p.imap_unordered(find_the_target, range(NUM_ITERATIONS))
+    #print(results)
+    #for result in results:
+        #print(result)
 
-    end_time = time.time()
+    #end_time = time.time()
 
 

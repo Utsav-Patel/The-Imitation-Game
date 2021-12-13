@@ -493,7 +493,7 @@ def update_status(maze: list, false_negative_rates: np.ndarray, maze_numpy:np.nd
     :return:
     """
     # Change in agent's maze according to full maze
-    if not maze_array[cur_pos[0]][cur_pos[1]].is_visited:
+    if not maze[cur_pos[0]][cur_pos[1]].is_visited:
         if maze_array[cur_pos[0]][cur_pos[1]] == 1:
             maze[cur_pos[0]][cur_pos[1]].is_blocked = True
             maze[cur_pos[0]][cur_pos[1]].is_visited = True
@@ -502,17 +502,17 @@ def update_status(maze: list, false_negative_rates: np.ndarray, maze_numpy:np.nd
             false_negative_rates[cur_pos[0]][cur_pos[1]] = FLAT_FALSE_NEGATIVE_RATE
             maze[cur_pos[0]][cur_pos[1]].is_blocked = False
             maze[cur_pos[0]][cur_pos[1]].is_visited = True
-            maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER * UNBLOCKED_WEIGHT
+            maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER * 50* UNBLOCKED_WEIGHT
         elif maze_array[cur_pos[0]][cur_pos[1]] == 3:
             false_negative_rates[cur_pos[0]][cur_pos[1]] = HILLY_FALSE_NEGATIVE_RATE
             maze[cur_pos[0]][cur_pos[1]].is_blocked = False
             maze[cur_pos[0]][cur_pos[1]].is_visited = True
-            maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER * UNBLOCKED_WEIGHT
+            maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER * 50* UNBLOCKED_WEIGHT
         elif maze_array[cur_pos[0]][cur_pos[1]] == 4:
             false_negative_rates[cur_pos[0]][cur_pos[1]] = FOREST_FALSE_NEGATIVE_RATE
             maze[cur_pos[0]][cur_pos[1]].is_blocked = False
             maze[cur_pos[0]][cur_pos[1]].is_visited = True
-            maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER * UNBLOCKED_WEIGHT
+            maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER * 50* UNBLOCKED_WEIGHT
         else:
             raise Exception("Invalid value in maze_array")
     else:
@@ -535,7 +535,7 @@ def forward_execution(maze: list, false_negative_rates: np.ndarray, maze_numpy:n
 
     # Setting current position to starting position so we can start iterating from start_pos
     cur_pos = start_pos
-
+    #print("starting exec")
     current_path = [cur_pos]
 
     # Iterating from start_pos to goal_pos if we won't get any blocks in between otherwise we are terminating the
@@ -544,20 +544,29 @@ def forward_execution(maze: list, false_negative_rates: np.ndarray, maze_numpy:n
 
         # Update the status of the current cell
         update_status(maze, false_negative_rates, maze_numpy, maze_array, cur_pos)
-        if data is not None:
-                if (project_no == 3) and (architecture_type == 'dense'):
-                    data.append({
-                        'current_pos': cur_pos,
-                        'input': np.stack((maze.maze_numpy.copy(), false_negative_rates.copy(), p_of_containing_target.copy())),
-                        'output': find_output(cur_pos, children[cur_pos])
-                    })
+
+    
         if cur_pos == children[cur_pos]:
             break
+
         # If we encounter any block in the path, we have to terminate the iteration
         if maze_array[children[cur_pos][0]][children[cur_pos][1]] == 1:
             break
+        
+        if data is not None:
+            if (project_no == 3) and (architecture_type == 'dense'):
+                #print('current position:', cur_pos, 'output:', children[cur_pos])
+                #print(children[cur_pos],'-----------')
+                data.append({
+                    'current_pos': cur_pos,
+                    'input': np.stack((maze_numpy.copy(), false_negative_rates.copy(), p_of_containing_target.copy())),
+                    'output': find_output(cur_pos, children[cur_pos])
+                })
+
         cur_pos = children[cur_pos]
+        #print('checking', cur_pos)
         current_path.append(cur_pos)
+        #print('checking 2', current_path)
 
     if cur_pos != goal_pos:
         # Change the start node to last unblocked node and backtrack if it is set to any positive integer.

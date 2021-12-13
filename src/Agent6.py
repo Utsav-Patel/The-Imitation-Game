@@ -8,7 +8,7 @@ Created on Sat Dec 11 18:10:28 2021
 # Necessary imports
 import numpy as np
 
-from helpers.agent6 import forward_execution
+from helpers.Agent6helper import forward_execution
 from src.Agent import Agent
 from helpers.Agent6helper import examine_and_propagate_probability, parent_to_child_dict, length_of_path_from_source_to_all_nodes
 from constants import ONE_PROBABILITY, INF
@@ -29,12 +29,15 @@ class Agent6(Agent):
 
         # Calculate children from parents dictionary
         self.children = parent_to_child_dict(self.parents, self.current_estimated_goal)
-
+        #print(self.current_position, '        ', self.children)
         # Agent will move along the planned path to reach current estimated goal
         current_path = forward_execution(self.maze, self.false_negative_rates,self.maze_numpy, full_maze,
                                                          self.current_position, self.current_estimated_goal,
-                                                         self.children, data, self.probability_of_containing_target)[:2]
+                                                         self.children, data, self.probability_of_containing_target)
         # Pick the last element of the current path to get agent's current position
+        #print('Current path')
+        #print(current_path)
+        #print(current_path[-1])
         self.current_position = current_path[-1]
 
         # Append current path to final path
@@ -55,14 +58,14 @@ class Agent6(Agent):
             self.num_examinations += 1
             probability_of_finding_target = np.multiply(self.probability_of_containing_target,
                                                 ONE_PROBABILITY - self.false_negative_rates)
-            distance_array = length_of_path_from_source_to_all_nodes(self.maze, self.current_pos)
-            distance_array[self.current_pos[0]][self.current_pos[1]] = INF
+            distance_array = length_of_path_from_source_to_all_nodes(self.maze, self.current_position)
+            distance_array[self.current_position[0]][self.current_position[1]] = INF
             utility_function = np.divide(probability_of_finding_target, distance_array)
             if data is not None:
-                        if (project_no == 3) and (architecture_type == 'dense'):
-                            data.append({
-                                'current_pos': self.current_position,
-                                'input': np.stack((self.maze_numpy.copy(), self.false_negative_rates.copy(), utility_function.copy())),
-                                'output': 4
-                            })
+                if (project_no == 3) and (architecture_type == 'dense'):
+                    data.append({
+                        'current_pos': self.current_position,
+                        'input': np.stack((self.maze_numpy.copy(), self.false_negative_rates.copy(), utility_function.copy())),
+                        'output': 4
+                    })
         return is_target_found
