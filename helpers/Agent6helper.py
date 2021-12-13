@@ -16,7 +16,7 @@ from constants import NUM_COLS, NUM_ROWS, X, Y, INF, ONE_PROBABILITY, ZERO_PROBA
     UNBLOCKED_WEIGHT
 
 
-def check(current_position: tuple):
+def check(current_position: tuple, num_cols: int = NUM_COLS, num_rows: int = NUM_ROWS):
     """
     Check whether current point is in the grid or not
     :param current_position: current point
