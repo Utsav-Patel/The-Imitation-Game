@@ -45,7 +45,7 @@ def find_the_target(p):
         target_pos = generate_target_position(random_maze)
         if length_of_path_from_source_to_goal(random_maze, STARTING_POSITION_OF_AGENT, target_pos) != INF:
             break
-    print(target_pos)
+    #print(target_pos)
     # Run agent 6,7, and 8 for the above generate grid and target position
     for agent_num in agents:
 
