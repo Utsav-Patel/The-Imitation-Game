@@ -11,7 +11,7 @@ import numpy as np
 from helpers.Agent6helper import forward_execution
 from src.Agent import Agent
 from helpers.Agent6helper import examine_and_propagate_probability, parent_to_child_dict, length_of_path_from_source_to_all_nodes
-from constants import ONE_PROBABILITY, INF
+from constants2 import ONE_PROBABILITY, INF
 
 # Blindfolded agent's class
 class Agent6(Agent):
@@ -50,12 +50,9 @@ class Agent6(Agent):
         :param target_pos: target's position
         :return: True if agent has found out target otherwise False
         """
-        is_target_found = examine_and_propagate_probability(self.maze, self.probability_of_containing_target,
-                                                            self.false_negative_rates, self.current_position,
-                                                            target_pos, self.current_estimated_goal,
-                                                            self.children[self.current_position])
+        
         if self.current_position == self.current_estimated_goal:
-            self.num_examinations += 1
+            self.num_examinations += 1  
             probability_of_finding_target = np.multiply(self.probability_of_containing_target,
                                                 ONE_PROBABILITY - self.false_negative_rates)
             distance_array = length_of_path_from_source_to_all_nodes(self.maze, self.current_position)
@@ -68,4 +65,9 @@ class Agent6(Agent):
                         'input': np.stack((self.maze_numpy.copy(), self.false_negative_rates.copy(), utility_function.copy())),
                         'output': 4
                     })
+        is_target_found = examine_and_propagate_probability(self.maze, self.probability_of_containing_target,
+                                                            self.false_negative_rates, self.current_position,
+                                                            target_pos, self.current_estimated_goal,
+                                                            self.children[self.current_position])
+
         return is_target_found

@@ -11,7 +11,7 @@ import numpy as np
 from sortedcontainers import SortedSet
 from queue import Queue
 
-from constants import NUM_COLS, NUM_ROWS, X, Y, INF, ONE_PROBABILITY, ZERO_PROBABILITY, STARTING_POSITION_OF_AGENT, \
+from constants2 import NUM_COLS, NUM_ROWS, X, Y, INF, ONE_PROBABILITY, ZERO_PROBABILITY, STARTING_POSITION_OF_AGENT, \
     FLAT_FALSE_NEGATIVE_RATE, HILLY_FALSE_NEGATIVE_RATE, FOREST_FALSE_NEGATIVE_RATE, BLOCKED_NUMBER, UNBLOCKED_NUMBER, \
     UNBLOCKED_WEIGHT
 
@@ -553,13 +553,19 @@ def forward_execution(maze: list, false_negative_rates: np.ndarray, maze_numpy:n
         if maze_array[children[cur_pos][0]][children[cur_pos][1]] == 1:
             break
         
+        
         if data is not None:
+            probability_of_finding_target = np.multiply(p_of_containing_target,
+                                                ONE_PROBABILITY - false_negative_rates)
+            distance_array = length_of_path_from_source_to_all_nodes(maze, cur_pos)
+            distance_array[cur_pos[0]][cur_pos[1]] = INF
+            utility_function = np.divide(probability_of_finding_target, distance_array)
             if (project_no == 3) and (architecture_type == 'dense'):
                 #print('current position:', cur_pos, 'output:', children[cur_pos])
                 #print(children[cur_pos],'-----------')
                 data.append({
                     'current_pos': cur_pos,
-                    'input': np.stack((maze_numpy.copy(), false_negative_rates.copy(), p_of_containing_target.copy())),
+                    'input': np.stack((maze_numpy.copy(), false_negative_rates.copy(), utility_function.copy())),
                     'output': find_output(cur_pos, children[cur_pos])
                 })
 

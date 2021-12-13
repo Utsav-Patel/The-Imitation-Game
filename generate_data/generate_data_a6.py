@@ -10,8 +10,9 @@ import numpy as np
 import multiprocessing
 from datetime import datetime
 import pickle
+import random
 
-from constants import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID, NUM_ROWS, NUM_COLS, NUM_ITERATIONS
+from constants2 import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID, NUM_ROWS, NUM_COLS, NUM_ITERATIONS, X, Y, DATA_PATH
 from helpers.Agent6helper import generate_grid_with_probability_p, compute_explored_cells_from_path, \
     length_of_path_from_source_to_goal, examine_and_propagate_probability, generate_target_position
 from src.Agent6 import Agent6
@@ -19,20 +20,28 @@ from src.Agent6 import Agent6
 
 agent = Agent6()
 
+start_value_of_probability = 0.21
+end_value_of_probability = 0.30
 
-def find_the_target(num: int):
+num_uniform_samples = 10
+num_times_run_for_each_probability = 1000
+
+# List of probability values
+list_of_probability_values = np.linspace(start_value_of_probability, end_value_of_probability, num_uniform_samples)
+
+def find_the_target(p):
     """
     Function to run each process for each grid
     :param num: number of times it's running
     :return: [total movements, total examinations, total actions]
     """
-    print('Running for:', num)
+    #print('Running for:', num)
 
     agents = [8]
     data = list()
     # Keep generating grid and target position until we will get valid pair of it
     while True:
-        random_maze = generate_grid_with_probability_p(PROBABILITY_OF_GRID)
+        random_maze = generate_grid_with_probability_p(p)
         target_pos = generate_target_position(random_maze)
         if length_of_path_from_source_to_goal(random_maze, STARTING_POSITION_OF_AGENT, target_pos) != INF:
             break
@@ -65,7 +74,7 @@ def find_the_target(num: int):
                 agent.maze[agent.current_estimated_goal[0]][agent.current_estimated_goal[1]].is_blocked = True
                 examine_and_propagate_probability(agent.maze, agent.probability_of_containing_target,
                                                   agent.false_negative_rates, agent.current_position, target_pos,
-                                                  agent.current_estimated_goal, agent.current_estimated_goal, data)
+                                                  agent.current_estimated_goal, agent.current_estimated_goal)
                 agent.pre_planning(agent_num)
                 agent.planning(agent.current_estimated_goal)
 
@@ -84,24 +93,54 @@ def find_the_target(num: int):
         print("date and time =", dt_string)
     return data
 
-result = find_the_target(1)
-for item in result:
-    print('Current_pos = ', item['current_pos'],' Output = ', item['output'])
-    
-#if __name__ == "__main__":
+#result = find_the_target(1)
 
-    #start_time = time.time()
+
+
+
+if __name__ == "__main__":
+
+    start_time = time.time()
 
     # Used multiprocessing to parallelize processes
-    #n_cores = int(multiprocessing.cpu_count())
-    #print('Number of cores', n_cores)
-   # p = multiprocessing.Pool(processes=n_cores)
+    n_cores = int(multiprocessing.cpu_count())
+    print('Number of cores', n_cores)
+    p = multiprocessing.Pool(processes=n_cores)
+    final_data = list()
+    
+    for probability_of_having_block in list_of_probability_values:
 
-    #results = p.imap_unordered(find_the_target, range(NUM_ITERATIONS))
-    #print(results)
-    #for result in results:
-        #print(result)
+        # Just printing so we know where we are at execution
+        print('Running for ', probability_of_having_block)
+        results = p.imap_unordered(find_the_target, [probability_of_having_block] * num_times_run_for_each_probability)
+        
+        
+        for result in results:
+                for dct in result:
+                    final_data.append(dct)
 
-    #end_time = time.time()
+    categorise_list = [list(), list(), list(), list(), list()]
+    
+    
+    for dct in final_data:
+        categorise_list[dct['output']].append(dct)
+
+    minimum_class_size = INF
+    for i in range(len(categorise_list)):
+        minimum_class_size = min(minimum_class_size, len(categorise_list[i]))
+        print("length of ", i, "th list: ", len(categorise_list[i]))
+
+    final_list = list()
+
+    for i in range(len(categorise_list)):
+        final_list = final_list + random.sample(categorise_list[i], minimum_class_size)
+
+    open_file = open(DATA_PATH, "wb")
+    pickle.dump(final_list, open_file)
+    open_file.close()
+    
+    
+    end_time = time.time()
+
 
 
