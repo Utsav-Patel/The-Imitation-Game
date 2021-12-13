@@ -12,16 +12,16 @@ import multiprocessing
 from src.Maze import Maze
 from helpers.helper import generate_grid_with_probability_p, repeated_forward, compute_heuristics, manhattan_distance
 from constants import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, GOAL_POSITION_OF_AGENT, INF, DATA_PATH, \
-    PROJECT_NO, ARCHITECTURE_TYPE
+    PROJECT_NO, ARCHITECTURE_TYPE, VALIDATION_TEST_PATH
 
 # Just to check how much time the code took
 print('Start running this file at', datetime.now().strftime("%m-%d-%Y %H-%M-%S"))
 
-start_value_of_probability = 0.10
-end_value_of_probability = 0.35
+start_value_of_probability = 0.17
+end_value_of_probability = 0.33
 
-num_uniform_samples = 26
-num_times_run_for_each_probability = 16000
+num_uniform_samples = 14
+num_times_run_for_each_probability = 1000
 
 # List of probability values
 list_of_probability_values = np.linspace(start_value_of_probability, end_value_of_probability, num_uniform_samples)
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     for i in range(len(categorise_list)):
         final_list = final_list + random.sample(categorise_list[i], minimum_class_size)
 
-    open_file = open(DATA_PATH, "wb")
+    open_file = open(VALIDATION_TEST_PATH, "wb")
     pickle.dump(final_list, open_file)
     open_file.close()
 
