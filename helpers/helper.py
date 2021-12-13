@@ -1,11 +1,12 @@
 import random
 import numpy as np
 from sortedcontainers import SortedSet
+from queue import Queue
 
 from src.Maze import Maze
 from constants import NUM_COLS, NUM_ROWS, STARTING_POSITION_OF_AGENT, GOAL_POSITION_OF_AGENT, X, Y, UNBLOCKED_NUMBER, \
-    BLOCKED_NUMBER, TARGET_CANNOT_BE_REACHED_NUMBER, CURRENT_CELL_WEIGHT, NEIGHBOR_WEIGHT, TRAINED_MODEL_NUM_ROWS,\
-    TRAINED_MODEL_NUM_COLS, UNBLOCKED_WEIGHT
+    BLOCKED_NUMBER, TARGET_CANNOT_BE_REACHED_NUMBER, CURRENT_CELL_WEIGHT, NEIGHBOR_WEIGHT, TRAINED_MODEL_NUM_ROWS, \
+    TRAINED_MODEL_NUM_COLS, UNBLOCKED_WEIGHT, TRAJECTORY_LENGTH_THRESHOLD
 
 
 def manhattan_distance(pos1: tuple, pos2: tuple):
@@ -387,8 +388,6 @@ def bootstraping(maze: Maze, current_position: tuple, num_rows: int, num_columns
 def make_action(maze: Maze, model, current_position: tuple, num_samples: int, project_no: int = 1,
                 architecture_type='dense'):
     start_positions = bootstraping(maze, current_position, NUM_ROWS, NUM_COLS, num_samples)
-    print('Starting positions')
-    print(start_positions)
     action = np.zeros(5)
     for start_pos in start_positions:
         if project_no == 1:
@@ -408,13 +407,11 @@ def make_action(maze: Maze, model, current_position: tuple, num_samples: int, pr
                                                                    current_position[1] - start_pos[1]),
                                                            project_no=project_no,
                                                            architecture_type=architecture_type))[0])
+    return np.argmax(action)
 
-    return random.choices(np.arange(len(action)), action / np.sum(action))[0]
 
-
-def repeated_forward_astar(maze_array: np.array, start_pos: tuple, goal_pos: tuple, model1, model2,
+def repeated_forward_astar(maze_array: np.array, start_pos: tuple, goal_pos: tuple, model1, model2 = None,
                            is_field_of_view_explored: bool = True):
-
     final_paths = list()
     total_actions = 0
     dense_valid_actions = 0
@@ -424,7 +421,8 @@ def repeated_forward_astar(maze_array: np.array, start_pos: tuple, goal_pos: tup
 
     if is_field_of_view_explored:
         explore_neighbors(mazes[0], maze_array, start_pos, 1, 'dense')
-        explore_neighbors(mazes[1], maze_array, start_pos, 1, 'cnn')
+        if model2 is not None:
+            explore_neighbors(mazes[1], maze_array, start_pos, 1, 'cnn')
 
     # Running the while loop until we will get a path from start_pos to goal_pos or we have figured out there is no path
     # from start_pos to goal_pos
@@ -434,15 +432,16 @@ def repeated_forward_astar(maze_array: np.array, start_pos: tuple, goal_pos: tup
 
         # If goal_pos doesn't exist in parents which means path is not available so returning empty list.
         if goal_pos not in parents:
-            action1 = make_action(mazes[0], model1, start_pos, 5, 1, 'dense')
-            action2 = make_action(mazes[1], model2, start_pos, 5, 1, 'cnn')
+            action1 = make_action(mazes[0], model1, start_pos, 1, 1, 'dense')
+            if model2 is not None:
+                action2 = make_action(mazes[1], model2, start_pos, 1, 1, 'cnn')
 
             output1 = 1
             output2 = 1
 
             if action1 == TARGET_CANNOT_BE_REACHED_NUMBER:
                 output1 = 0
-            if action2 == TARGET_CANNOT_BE_REACHED_NUMBER:
+            if model2 is not None and action2 == TARGET_CANNOT_BE_REACHED_NUMBER:
                 output2 = 0
 
             return total_actions, dense_valid_actions, cnn_valid_actions, 0, output1, output2
@@ -472,19 +471,21 @@ def repeated_forward_astar(maze_array: np.array, start_pos: tuple, goal_pos: tup
             # Explore the field of view and update the blocked nodes if there's any in the path.
             if is_field_of_view_explored and start_pos != cur_pos:
                 explore_neighbors(mazes[0], maze_array, cur_pos, 1, 'dense')
-                explore_neighbors(mazes[1], maze_array, cur_pos, 1, 'cnn')
+                if model2 is not None:
+                    explore_neighbors(mazes[1], maze_array, cur_pos, 1, 'cnn')
 
             # If we encounter any block in the path, we have to terminate the iteration
             if maze_array[children[cur_pos][0]][children[cur_pos][1]] == BLOCKED_NUMBER:
                 break
 
-            action1 = make_action(mazes[0], model1, start_pos, 5, 1, 'dense')
-            action2 = make_action(mazes[1], model2, start_pos, 5, 1, 'cnn')
+            action1 = make_action(mazes[0], model1, start_pos, 1, 1, 'dense')
+            if model2 is not None:
+                action2 = make_action(mazes[1], model2, start_pos, 1, 1, 'cnn')
 
             total_actions += 1
             if action1 == find_output(cur_pos, children[cur_pos]):
                 dense_valid_actions += 1
-            if action2 == find_output(cur_pos, children[cur_pos]):
+            if model2 is not None and action2 == find_output(cur_pos, children[cur_pos]):
                 cnn_valid_actions += 1
             cur_pos = children[cur_pos]
             current_path.append(cur_pos)
@@ -524,33 +525,182 @@ def ml_agent_dfs(maze: Maze, full_maze: np.array, start_position: tuple, goal_po
     #
     # model.load_weights(latest)
     current_position = start_position
-    num_samples = 5
+    num_samples = 10
     trajectory_length = 0
 
     while True:
         # Exploration
+        if trajectory_length > TRAJECTORY_LENGTH_THRESHOLD:
+            return trajectory_length, 0
         explore_neighbors(maze, full_maze, current_position, project_no=project_no, architecture_type=architecture_type)
 
         action = make_action(maze, model, current_position, num_samples, project_no=project_no,
                              architecture_type=architecture_type)
 
         if action == TARGET_CANNOT_BE_REACHED_NUMBER:
-            print('Full maze')
-            print(full_maze)
-            print(current_position)
-            print('current maze')
             print(maze.maze_numpy)
-            input()
             return trajectory_length, 0
         next_position = (current_position[0] + X[action], current_position[1] + Y[action])
         trajectory_length += 1
         if check(next_position, NUM_COLS, NUM_ROWS):
             if full_maze[next_position[0]][next_position[1]] == BLOCKED_NUMBER:
-                return -2, 0
+                maze.maze_numpy[next_position[0]][next_position[1]] += BLOCKED_NUMBER
+                # print('blocked cell')
+                # print(current_position)
+                # print(next_position)
             else:
                 current_position = next_position
         else:
-            return -1, 0
+            # print("out of bound")
+            # print(current_position)
+            # print(next_position)
+            for ind in range(len(X)):
+                neighbor = (current_position[0] + X[ind], current_position[1] + Y[ind])
+                if check(neighbor, NUM_ROWS, NUM_COLS):
+                    if not maze.maze[neighbor[0]][neighbor[1]].is_blocked:
+                        maze.maze_numpy[neighbor[0]][neighbor[1]] += UNBLOCKED_NUMBER
+            # return -1, 0
 
         if current_position == goal_position:
             return trajectory_length, 1
+
+
+def parent_to_child_dict(parent: dict, starting_position: tuple):
+    """
+    This function is helpful to generate children dictionary from parents dictionary
+    :param parent: parent dictionary
+    :param starting_position: starting position of the last function
+    :return: generate child dictionary from parent.
+    """
+    child = dict()
+
+    child[starting_position] = starting_position
+    cur_pos = starting_position
+
+    # Storing child of each node so we can iterate from start_pos to goal_pos
+    while cur_pos != parent[cur_pos]:
+        child[parent[cur_pos]] = cur_pos
+        cur_pos = parent[cur_pos]
+
+    return child
+
+
+def sense_current_node(maze, current_position: tuple, full_maze: np.array):
+    """
+    This function is used to sense the current node and update details in the knowledge base
+    :param maze: Maze object
+    :param current_position: position of the maze for which you want to sense
+    :param full_maze: full maze
+    :return: Nothing as we are directly updating into maze object
+    """
+
+    # Visit all eight neighbors and sense them
+    for neighbor in maze[current_position[0]][current_position[1]].eight_neighbors:
+
+        # Update the status for confirm and non-confirm conditions
+        if maze[neighbor[0]][neighbor[1]].is_confirmed:
+            if maze[neighbor[0]][neighbor[1]].is_blocked:
+                maze[current_position[0]][current_position[1]].num_confirmed_blocked += 1
+                maze[current_position[0]][current_position[1]].num_sensed_blocked += 1
+            else:
+                maze[current_position[0]][current_position[1]].num_confirmed_unblocked += 1
+                maze[current_position[0]][current_position[1]].num_sensed_unblocked += 1
+        else:
+
+            if full_maze[neighbor[0]][neighbor[1]] == 1:
+                maze[current_position[0]][current_position[1]].num_sensed_blocked += 1
+            else:
+                maze[current_position[0]][current_position[1]].num_sensed_unblocked += 1
+
+
+def can_infer(num_sensed_blocked: int, num_confirmed_blocked: int, num_sensed_unblocked: int,
+              num_confirmed_unblocked: int):
+    """
+    check whether we can infer or not from the current set of variables
+    :param num_sensed_blocked: number of sensed blocks
+    :param num_confirmed_blocked: number of confirmed blocks
+    :param num_sensed_unblocked: number of sensed unblocks
+    :param num_confirmed_unblocked: number confirmed unblocks
+    :return: True if we can infer anything otherwise False
+    """
+
+    # Check precondition
+    assert (num_sensed_blocked >= num_confirmed_blocked) and (num_sensed_unblocked >= num_confirmed_unblocked)
+
+    # Condition whether we can infer or not
+    if ((num_sensed_blocked == num_confirmed_blocked) and (num_sensed_unblocked > num_confirmed_unblocked)) or \
+            ((num_sensed_unblocked == num_confirmed_unblocked) and (num_sensed_blocked > num_confirmed_blocked)):
+        return True
+    return False
+
+
+def find_block_while_inference(maze: list, current_position: tuple, full_maze: np.array, entire_trajectory_nodes=None):
+    """
+    This function helps us find blocks in the path if they exist while also performing inference.
+    :param maze: This agents copy of the maze.
+    :param current_position: This is the current position of the agent.
+    :param full_maze: This is the full maze.
+    :param entire_trajectory_nodes: This is the set of nodes that are in the agents current trajectory.
+    :return: True if there is a block in path else false.
+    """
+
+    # We create this queue to help us store all the variables that are going to be confirmed and subsequently store
+    # those cells in a set so that we can access them in constant time.
+    inference_items = Queue()
+    items_in_the_queue = set()
+    is_block_node_in_current_path = False
+
+    # We put the current position of the agent into the Queue and set.
+    inference_items.put(current_position)
+    items_in_the_queue.add(current_position)
+
+    # We run this while loop until the queue is empty and there is nothing left to be inferred.
+    while not inference_items.empty():
+        current_node = inference_items.get()
+        items_in_the_queue.remove(current_node)
+
+        # If the current node is not set as confirmed in the maze then we set it to confirmed and made updates
+        # accordingly
+        if not maze[current_node[0]][current_node[1]].is_confirmed:
+
+            maze[current_node[0]][current_node[1]].is_confirmed = True
+
+            if full_maze[current_node[0]][current_node[1]] == 1:
+                maze[current_node[0]][current_node[1]].is_blocked = True
+
+                # If current node is in the trajectory then we should return True for this function
+                if current_node in entire_trajectory_nodes:
+                    is_block_node_in_current_path = True
+            else:
+                maze[current_node[0]][current_node[1]].is_blocked = False
+
+            # Iterate over eight neighbors, update their status and add it into the queue
+            for neighbor in maze[current_node[0]][current_node[1]].eight_neighbors:
+                if not maze[neighbor[0]][neighbor[1]].is_visited:
+                    continue
+                if maze[current_node[0]][current_node[1]].is_blocked:
+                    maze[neighbor[0]][neighbor[1]].num_confirmed_blocked += 1
+                else:
+                    maze[neighbor[0]][neighbor[1]].num_confirmed_unblocked += 1
+
+                if not (neighbor in items_in_the_queue):
+                    items_in_the_queue.add(neighbor)
+                    inference_items.put(neighbor)
+
+        # If the current cell is visited, we can inference rules to them
+        if maze[current_node[0]][current_node[1]].is_visited:
+
+            # This rule applies to the 3rd as well as the 4th agent where we are trying to infer using only one
+            # cell's inference
+            if can_infer(maze[current_node[0]][current_node[1]].num_sensed_blocked,
+                         maze[current_node[0]][current_node[1]].num_confirmed_blocked,
+                         maze[current_node[0]][current_node[1]].num_sensed_unblocked,
+                         maze[current_node[0]][current_node[1]].num_confirmed_unblocked):
+
+                for neighbor in maze[current_node[0]][current_node[1]].eight_neighbors:
+                    if (neighbor not in items_in_the_queue) and \
+                            (not maze[neighbor[0]][neighbor[1]].is_confirmed):
+                        items_in_the_queue.add(neighbor)
+                        inference_items.put(neighbor)
+
+    return is_block_node_in_current_path

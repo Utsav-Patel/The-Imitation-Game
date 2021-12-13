@@ -64,7 +64,7 @@ model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     save_freq='epoch'
 )
 
-history = model.fit(X_train, y_train, epochs=30, batch_size=512, validation_data=(X_val, y_val),
+history = model.fit(X_train, y_train, epochs=20, batch_size=128, validation_data=(X_val, y_val),
                     callbacks=[model_checkpoint_callback])
 
 print(history.history)
