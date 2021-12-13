@@ -18,7 +18,7 @@ from constants import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, GOAL_POSIT
 print('Start running this file at', datetime.now().strftime("%m-%d-%Y %H-%M-%S"))
 
 start_value_of_probability = 0.17
-end_value_of_probability = 0.33
+end_value_of_probability = 0.30
 
 num_uniform_samples = 14
 num_times_run_for_each_probability = 1000
