@@ -4,8 +4,8 @@ PROJECT_PATH = os.path.dirname(__file__)
 PROJECT_NO = 1
 ARCHITECTURE_TYPE = 'cnn'
 
-NUM_COLS = 20
-NUM_ROWS = 20
+NUM_COLS = 50
+NUM_ROWS = 50
 
 TRAINED_MODEL_NUM_ROWS = 20
 TRAINED_MODEL_NUM_COLS = 20
@@ -25,9 +25,9 @@ VALIDATION_TEST_PATH = os.path.join(PROJECT_PATH, "data", "project" + str(PROJEC
                                     VALIDATION_TEST_DATA_PREFIX + ".pkl")
 
 STATE_OF_THE_ART_MODEL_PROJECT1_DENSE_CHECKPOINT_PATH = os.path.join(PROJECT_PATH, "checkpoints", "project1", "dense",
-                                                                     FILE_PREFIX)
+                                                                     FILE_PREFIX, FILE_SUFFIX)
 STATE_OF_THE_ART_MODEL_PROJECT1_CNN_CHECKPOINT_PATH = os.path.join(PROJECT_PATH, "checkpoints", "project1", "cnn",
-                                                                   FILE_PREFIX)
+                                                                   FILE_PREFIX, FILE_SUFFIX)
 
 STARTING_POSITION_OF_AGENT = (0, 0)
 GOAL_POSITION_OF_AGENT = (NUM_ROWS - 1, NUM_COLS - 1)
@@ -43,7 +43,7 @@ UNBLOCKED_WEIGHT = 5
 
 NEIGHBOR_WEIGHT = 10
 CURRENT_CELL_WEIGHT = 100
-TRAJECTORY_LENGTH_THRESHOLD = 1000
+TRAJECTORY_LENGTH_THRESHOLD = 500
 
 FLAT_FALSE_NEGATIVE_RATE = 0.2
 HILLY_FALSE_NEGATIVE_RATE = 0.5

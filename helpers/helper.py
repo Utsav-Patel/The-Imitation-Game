@@ -268,7 +268,6 @@ def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tu
 
     # defining the following two attributes to find which would be useful to return values
     final_paths = list()
-    total_explored_nodes = 0
 
     if is_field_of_view_explored:
         explore_neighbors(maze, maze_array, start_pos, project_no, architecture_type)
@@ -278,8 +277,6 @@ def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tu
     while True:
 
         parents, num_explored_nodes = astar_search(maze, start_pos, goal_pos)
-        # Adding up number of nodes explored (processed) in the last call to algorithm.
-        total_explored_nodes += num_explored_nodes
 
         # If goal_pos doesn't exist in parents which means path is not available so returning empty list.
         if goal_pos not in parents:
@@ -407,7 +404,7 @@ def make_action(maze: Maze, model, current_position: tuple, num_samples: int, pr
         action += np.array(model.predict(pre_process_input(array, (current_position[0] - start_pos[0],
                                                                    current_position[1] - start_pos[1]),
                                                            project_no=project_no,
-                                                           architecture_type=architecture_type))[0])
+                                                           architecture_type=architecture_type, is_testing=True))[0])
     return np.argmax(action)
 
 
@@ -509,6 +506,20 @@ def repeated_forward_astar(maze_array: np.array, start_pos: tuple, goal_pos: tup
             start_pos = cur_pos
 
 
+def generate_random_position(maze: Maze, current_position: tuple):
+    possible_actions = list()
+    for ind in range(len(X)):
+        neighbor = (current_position[0] + X[ind], current_position[1] + Y[ind])
+        if check(neighbor, NUM_ROWS, NUM_COLS):
+            if not maze.maze[neighbor[0]][neighbor[1]].is_blocked:
+                possible_actions.append(ind)
+    if len(possible_actions) > 0:
+        action = random.choice(possible_actions)
+        return current_position[0] + X[action], current_position[1] + Y[action]
+    else:
+        return current_position
+
+
 def ml_agent_dfs(maze: Maze, full_maze: np.array, start_position: tuple, goal_position: tuple, project_no: int = 1,
                  architecture_type: str = 'dense', model=None):
     # checkpoint_dir = os.path.dirname(checkpoint_directory)
@@ -528,42 +539,83 @@ def ml_agent_dfs(maze: Maze, full_maze: np.array, start_position: tuple, goal_po
     current_position = start_position
     num_samples = 10
     trajectory_length = 0
+    predicted_blocked_cells = 0
+    predicted_out_of_maze_cells = 0
 
+    previous_prediction = (-4, -4)
+    previous_frequency = 0
     while True:
         # Exploration
         if trajectory_length > TRAJECTORY_LENGTH_THRESHOLD:
-            return trajectory_length, 0
+            return trajectory_length, 0, predicted_blocked_cells, predicted_out_of_maze_cells
         explore_neighbors(maze, full_maze, current_position, project_no=project_no, architecture_type=architecture_type)
 
         action = make_action(maze, model, current_position, num_samples, project_no=project_no,
                              architecture_type=architecture_type)
 
-        if action == TARGET_CANNOT_BE_REACHED_NUMBER:
-            print(maze.maze_numpy)
-            return trajectory_length, 0
+        # if action == TARGET_CANNOT_BE_REACHED_NUMBER:
+        #     print(maze.maze_numpy)
+        #     return trajectory_length, 0
         next_position = (current_position[0] + X[action], current_position[1] + Y[action])
         trajectory_length += 1
         if check(next_position, NUM_COLS, NUM_ROWS):
             if full_maze[next_position[0]][next_position[1]] == BLOCKED_NUMBER:
                 maze.maze_numpy[next_position[0]][next_position[1]] += BLOCKED_NUMBER
-                print('blocked cell')
-                print(current_position)
-                print(next_position)
+                # print('blocked cell')
+                # print(current_position)
+                # print(next_position)
+
+                predicted_blocked_cells += 1
+
+                if previous_prediction == next_position:
+                    previous_frequency += 1
+                else:
+                    previous_prediction = next_position
+                    previous_frequency = 1
+
+                if previous_frequency > 5:
+                    next_position = generate_random_position(maze, current_position)
+                    if next_position == current_position:
+                        return trajectory_length, 0, predicted_blocked_cells, predicted_out_of_maze_cells
+                    else:
+                        current_position = next_position
+                    previous_prediction = (-4, -4)
+                    previous_frequency = 0
             else:
                 current_position = next_position
+                previous_prediction = (-4, -4)
+                previous_frequency = 0
         else:
-            print("out of bound")
-            print(current_position)
-            print(next_position)
+            # print("out of bound")
+            # print(current_position)
+            # print(next_position)
+
+            predicted_out_of_maze_cells += 1
+
             for ind in range(len(X)):
                 neighbor = (current_position[0] + X[ind], current_position[1] + Y[ind])
                 if check(neighbor, NUM_ROWS, NUM_COLS):
                     if not maze.maze[neighbor[0]][neighbor[1]].is_blocked:
                         maze.maze_numpy[neighbor[0]][neighbor[1]] += UNBLOCKED_NUMBER
+
+            if previous_prediction == next_position:
+                previous_frequency += 1
+            else:
+                previous_prediction = next_position
+                previous_frequency = 1
+            if previous_frequency > 5:
+                next_position = generate_random_position(maze, current_position)
+                if next_position == current_position:
+                    return trajectory_length, 0, predicted_blocked_cells, predicted_out_of_maze_cells
+                else:
+                    current_position = next_position
+                previous_prediction = (-4, -4)
+                previous_frequency = 0
             # return -1, 0
 
         if current_position == goal_position:
-            return trajectory_length, 1
+            print('Reached goal position')
+            return trajectory_length, 1, predicted_blocked_cells, predicted_out_of_maze_cells
 
 
 def parent_to_child_dict(parent: dict, starting_position: tuple):
