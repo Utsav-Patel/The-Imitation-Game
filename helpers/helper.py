@@ -388,7 +388,7 @@ def bootstraping(maze: Maze, current_position: tuple, num_rows: int, num_columns
 def make_action(maze: Maze, model, current_position: tuple, num_samples: int, project_no: int = 1,
                 architecture_type='dense'):
     start_positions = bootstraping(maze, current_position, NUM_ROWS, NUM_COLS, num_samples)
-    action = np.zeros(5)
+    action = np.zeros(4)
     for start_pos in start_positions:
         if project_no == 1:
             if architecture_type == 'dense':
@@ -545,15 +545,15 @@ def ml_agent_dfs(maze: Maze, full_maze: np.array, start_position: tuple, goal_po
         if check(next_position, NUM_COLS, NUM_ROWS):
             if full_maze[next_position[0]][next_position[1]] == BLOCKED_NUMBER:
                 maze.maze_numpy[next_position[0]][next_position[1]] += BLOCKED_NUMBER
-                # print('blocked cell')
-                # print(current_position)
-                # print(next_position)
+                print('blocked cell')
+                print(current_position)
+                print(next_position)
             else:
                 current_position = next_position
         else:
-            # print("out of bound")
-            # print(current_position)
-            # print(next_position)
+            print("out of bound")
+            print(current_position)
+            print(next_position)
             for ind in range(len(X)):
                 neighbor = (current_position[0] + X[ind], current_position[1] + Y[ind])
                 if check(neighbor, NUM_ROWS, NUM_COLS):
