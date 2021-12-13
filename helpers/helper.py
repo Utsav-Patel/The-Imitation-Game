@@ -190,7 +190,8 @@ def astar_search(maze: Maze, start_pos: tuple, goal_pos: tuple):
     return parents, num_explored_nodes
 
 
-def pre_process_input(array: np.array, current_position: tuple, project_no: int = 1, architecture_type: str = 'dense'):
+def pre_process_input(array: np.array, current_position: tuple, project_no: int = 1, architecture_type: str = 'dense',
+                      is_testing: bool = False):
     if project_no == 1:
 
         if architecture_type == 'dense':
@@ -208,7 +209,7 @@ def pre_process_input(array: np.array, current_position: tuple, project_no: int 
                 neighbor = (current_position[0] + X[ind2], current_position[1] + Y[ind2])
                 if check(neighbor, TRAINED_MODEL_NUM_ROWS, TRAINED_MODEL_NUM_COLS):
                     position[neighbor[0]][neighbor[1]] = NEIGHBOR_WEIGHT
-            if len(array.shape) == 2:
+            if is_testing:
                 return np.expand_dims(np.stack(((array % 100) - 1, np.floor(array / 100), position)), axis=0)
             else:
                 return np.stack(((array % 100) - 1, np.floor(array / 100), position))
