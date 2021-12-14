@@ -3,7 +3,7 @@ import numpy as np
 
 from constants import GOAL_POSITION_OF_AGENT, NUM_ROWS, NUM_COLS, UNVISITED_NUMBER, UNBLOCKED_NUMBER, UNBLOCKED_WEIGHT,\
     BLOCKED_NUMBER, STARTING_POSITION_OF_AGENT
-from src.Agent import Agent
+from src.Agent_Project2 import Agent
 from helpers.helper import parent_to_child_dict, sense_current_node, find_block_while_inference, find_output
 
 
