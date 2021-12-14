@@ -28,7 +28,7 @@ start_value_of_probability = 0.21
 end_value_of_probability = 0.30
 
 num_uniform_samples = 10
-num_times_run_for_each_probability = 1000
+num_times_run_for_each_probability = 100
 
 # List of probability values
 list_of_probability_values = np.linspace(start_value_of_probability, end_value_of_probability, num_uniform_samples)
@@ -136,7 +136,7 @@ if __name__ == "__main__":
     for i in range(len(categorise_list)):
         final_list = final_list + random.sample(categorise_list[i], minimum_class_size)
 
-    open_file = open(DATA_PATH, "wb")
+    open_file = open(VALIDATION_TEST_PATH, "wb")
     pickle.dump(final_list, open_file)
     open_file.close()
     
