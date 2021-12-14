@@ -33,7 +33,8 @@ class Agent6(Agent):
         # Agent will move along the planned path to reach current estimated goal
         current_path = forward_execution(self.maze, self.false_negative_rates,self.maze_numpy, full_maze,
                                                          self.current_position, self.current_estimated_goal,
-                                                         self.children, data, self.probability_of_containing_target)
+                                                         self.children, data, self.probability_of_containing_target,
+                                                         self.maze_exam_numpy)
         # Pick the last element of the current path to get agent's current position
         #print('Current path')
         #print(current_path)
@@ -53,6 +54,8 @@ class Agent6(Agent):
         
         if self.current_position == self.current_estimated_goal:
             self.num_examinations += 1  
+            self.maze_exam_numpy[self.current_position[0]][self.current_position[1]] += 1
+            
             probability_of_finding_target = np.multiply(self.probability_of_containing_target,
                                                 ONE_PROBABILITY - self.false_negative_rates)
             distance_array = length_of_path_from_source_to_all_nodes(self.maze, self.current_position)
@@ -62,7 +65,7 @@ class Agent6(Agent):
                 if (project_no == 3) and (architecture_type == 'dense'):
                     data.append({
                         'current_pos': self.current_position,
-                        'input': np.stack((self.maze_numpy.copy(), utility_function.copy())),
+                        'input': np.stack((self.maze_numpy.copy(), self.maze_exam_numpy.copy(), utility_function.copy())),
                         'output': 4
                     })
         is_target_found = examine_and_propagate_probability(self.maze, self.probability_of_containing_target,

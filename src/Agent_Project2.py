@@ -1,21 +1,12 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Dec 11 17:49:09 2021
-
-@author: Gambit
-"""
-
 # Import necessary things
 from abc import ABC, abstractmethod
 
 import numpy as np
-import math
 
-from constants2 import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, X, Y, \
-    FLAT_FALSE_NEGATIVE_RATE, HILLY_FALSE_NEGATIVE_RATE, FOREST_FALSE_NEGATIVE_RATE, UNVISITED_NUMBER
+from constants import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, X, Y, UNVISITED_NUMBER
 from src.Cell import Cell
-from helpers.Agent6helper import astar_search, check
-from helpers.Agent6helper import compute_current_estimated_goal
+from helpers.helper import check
+from helpers.helper import astar_search_list
 
 
 # Agent class
@@ -43,16 +34,11 @@ class Agent(ABC):
 
         # Initialize some important variables of this class
         self.current_position = STARTING_POSITION_OF_AGENT
-        self.probability_of_containing_target = np.zeros((NUM_ROWS, NUM_COLS)) + (1.0 / (NUM_ROWS * NUM_COLS))
-        self.false_negative_rates = np.zeros((NUM_ROWS, NUM_COLS)) + 0.5
         self.maze_numpy = np.zeros((NUM_ROWS, NUM_COLS)) + UNVISITED_NUMBER
         self.final_paths = list()
         self.parents = dict()
         self.children = dict()
-        self.current_estimated_goal = list()
         self.num_examinations = 0
-        
-        self.maze_exam_numpy = np.zeros((NUM_ROWS, NUM_COLS))
 
         self.num_confirmed_cells = 0
         self.num_confirmed_blocked_cells = 0
@@ -62,20 +48,10 @@ class Agent(ABC):
         self.num_early_termination = 0
 
         # set list of global threshold
-        #self.global_threshold = list()
-        #self.global_threshold.append(math.ceil(math.log(ACCURACY_TO_ACHIEVE) / math.log(FLAT_FALSE_NEGATIVE_RATE)))
-        #self.global_threshold.append(math.ceil(math.log(ACCURACY_TO_ACHIEVE) / math.log(HILLY_FALSE_NEGATIVE_RATE)))
-        #self.global_threshold.append(math.ceil(math.log(ACCURACY_TO_ACHIEVE) / math.log(FOREST_FALSE_NEGATIVE_RATE)))
-
-    def pre_planning(self, agent_num=6):
-        """
-        Method to find current estimated goal
-        :param agent_num: agent number for which you want to find estimated goal
-        :return: Nothing to return as we are setting attribute
-        """
-        self.current_estimated_goal = compute_current_estimated_goal(self.maze, self.current_position, agent_num,
-                                                                     self.probability_of_containing_target,
-                                                                     self.false_negative_rates)
+        # self.global_threshold = list()
+        # self.global_threshold.append(math.ceil(math.log(ACCURACY_TO_ACHIEVE) / math.log(FLAT_FALSE_NEGATIVE_RATE)))
+        # self.global_threshold.append(math.ceil(math.log(ACCURACY_TO_ACHIEVE) / math.log(HILLY_FALSE_NEGATIVE_RATE)))
+        # self.global_threshold.append(math.ceil(math.log(ACCURACY_TO_ACHIEVE) / math.log(FOREST_FALSE_NEGATIVE_RATE)))
 
     # General method for planning
     def planning(self, goal_pos):
@@ -84,7 +60,7 @@ class Agent(ABC):
         :param goal_pos: agent's current estimated goal
         :return: Nothing as we are storing results in agent's parents object
         """
-        self.parents, num_explored_nodes = astar_search(self.maze, self.current_position, goal_pos)[:2]
+        self.parents, num_explored_nodes = astar_search_list(self.maze, self.current_position, goal_pos)[:2]
         # self.num_cells_processed_while_planning += num_explored_nodes
 
     # reset method
@@ -94,16 +70,12 @@ class Agent(ABC):
         :return: Nothing
         """
         self.current_position = STARTING_POSITION_OF_AGENT
-        self.probability_of_containing_target = np.zeros((NUM_ROWS, NUM_COLS)) + (1.0 / (NUM_ROWS * NUM_COLS))
-        self.false_negative_rates = np.zeros((NUM_ROWS, NUM_COLS)) + 0.5
         self.final_paths = list()
         self.parents = dict()
         self.children = dict()
-        self.current_estimated_goal = list()
-        
+
         self.maze_numpy = np.zeros((NUM_ROWS, NUM_COLS)) + UNVISITED_NUMBER
-        self.maze_exam_numpy = np.zeros((NUM_ROWS, NUM_COLS))
-        
+
         self.num_confirmed_cells = 0
         self.num_confirmed_blocked_cells = 0
 
