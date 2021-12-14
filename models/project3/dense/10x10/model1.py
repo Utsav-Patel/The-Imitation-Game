@@ -36,7 +36,6 @@ def prepare_dataset(path):
         current_position_list.append(dct['current_pos'])
 
     for ind in range(len(input_list)):
-
         input_list[ind][0][current_position_list[ind][0]][current_position_list[ind][1]] = CURRENT_CELL_WEIGHT
         for ind2 in range(len(X)):
             neighbor = (current_position_list[ind][0] + X[ind2], current_position_list[ind][1] + Y[ind2])
@@ -46,7 +45,7 @@ def prepare_dataset(path):
     input_numpy = np.array(input_list)
     input_numpy = input_numpy.reshape(input_numpy.shape[0], -1)
     # input_numpy = np.hstack((np.zeros(input_numpy.shape[0]).reshape(-1, 1), input_numpy))
-
+    
     output_numpy = np.array(output_list)
     output_numpy = output_numpy.reshape(output_numpy.shape[0])
     output_numpy = to_categorical(output_numpy)
