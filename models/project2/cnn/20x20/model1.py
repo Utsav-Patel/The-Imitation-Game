@@ -8,6 +8,10 @@ from constants import CHECKPOINT_FILEPATH, PROJECT2_DATA_PATH, PROJECT2_VALIDATI
 from model_architectures import create_model_project2_cnn_20x20
 from DataGenerator import DataGenerator
 
+config = tf.compat.v1.ConfigProto()
+config.gpu_options.allow_growth = True
+sess = tf.compat.v1.Session(config=config)
+
 
 def prepare_dataset(path):
     open_file = open(path, "rb")

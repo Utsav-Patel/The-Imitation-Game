@@ -334,7 +334,7 @@ def pre_process_input(array: np.array, current_position: tuple, project_no: int 
             num_confirmed_unblocked = np.floor(sensed / 100) % 10
             num_sensed_unblocked = np.floor(sensed / 1000) % 10
             return np.stack((array, num_confirmed_blocked, num_sensed_blocked, num_confirmed_unblocked,
-                             num_sensed_unblocked)).reshape(1, -1)
+                             num_sensed_unblocked)).reshape(-1)
 
         elif architecture_type == 'cnn':
             position = np.zeros((TRAINED_MODEL_NUM_ROWS, TRAINED_MODEL_NUM_COLS))
