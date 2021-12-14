@@ -171,7 +171,7 @@ def create_model_project2_dense_20x20():
         tf.keras.layers.Dense(4, activation='softmax'),
     ])
 
-    loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
+    loss_fn = tf.keras.losses.CategoricalCrossentropy()
     adam = tf.keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False,
                                     name='Adam')
 
