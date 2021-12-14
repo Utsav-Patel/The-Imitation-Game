@@ -76,7 +76,7 @@ if __name__ == "__main__":
             print(result)
         final_list.append(probability_list)
 
-    with open(os.path.join(PROJECT_PATH, 'results', 'project1.pkl'), 'wb') as f:
+    with open(os.path.join(PROJECT_PATH, 'results', 'project2.pkl'), 'wb') as f:
         pickle.dump({'probability': list_of_probability_values, 'output': final_list}, f)
 # Ending execution for this file. Now only plots are remaining
 print('Ending running this file at', datetime.now().strftime("%m-%d-%Y %H-%M-%S"))
