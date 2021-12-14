@@ -36,6 +36,9 @@ def prepare_dataset(path):
         current_position_list.append(dct['current_pos'])
 
     for ind in range(len(input_list)):
+        print('       ', input_list[0][ind], '       ')
+        print('       ', input_list[ind], '       ')
+        print('       ', input_list[ind][0], '       ')
         input_list[ind][current_position_list[ind][0]][current_position_list[ind][1]] = CURRENT_CELL_WEIGHT
         for ind2 in range(len(X)):
             neighbor = (current_position_list[ind][0] + X[ind2], current_position_list[ind][1] + Y[ind2])
