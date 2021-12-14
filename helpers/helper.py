@@ -298,7 +298,7 @@ def astar_search(maze: Maze, start_pos: tuple, goal_pos: tuple):
 
 
 def pre_process_input(array: np.array, current_position: tuple, project_no: int = 1, architecture_type: str = 'dense',
-                      is_testing: bool = False):
+                      is_testing: bool = False, sensed: np.array = None):
     if project_no == 1:
 
         if architecture_type == 'dense':
@@ -320,6 +320,26 @@ def pre_process_input(array: np.array, current_position: tuple, project_no: int 
                 return np.expand_dims(np.stack(((array % 100) - 1, np.floor(array / 100), position)), axis=0)
             else:
                 return np.stack(((array % 100) - 1, np.floor(array / 100), position))
+
+    elif project_no == 2:
+
+        if architecture_type == 'dense':
+            array[current_position[0]][current_position[1]] = CURRENT_CELL_WEIGHT
+            for ind2 in range(len(X)):
+                neighbour = (current_position[0] + X[ind2], current_position[1] + Y[ind2])
+                if check(neighbour, TRAINED_MODEL_NUM_ROWS, TRAINED_MODEL_NUM_ROWS):
+                    array[neighbour[0]][neighbour[1]] *= NEIGHBOR_WEIGHT
+            # 'sensed': 1 * self.num_confirmed_blocked + 10 * self.num_sensed_blocked +
+            # 100 * self.num_confirmed_unblocked + 1000 * self.num_sensed_unblocked,
+            num_confirmed_blocked = sensed % 10
+            num_sensed_blocked = np.floor(sensed / 10) % 10
+            num_confirmed_unblocked = np.floor(sensed / 100) % 10
+            num_sensed_unblocked = np.floor(sensed / 1000) % 10
+            return np.stack((array, num_confirmed_blocked, num_sensed_blocked, num_confirmed_unblocked,
+                             num_sensed_unblocked)).reshape(1, -1)
+
+        elif architecture_type == 'cnn':
+            pass
 
 
 def explore_neighbors(maze: Maze, maze_array: np.array, cur_pos: tuple, project_no: int = 1,
@@ -515,7 +535,7 @@ def make_action(maze: Maze, model, current_position: tuple, num_samples: int, pr
     return np.argmax(action)
 
 
-def repeated_forward_astar(maze_array: np.array, start_pos: tuple, goal_pos: tuple, model1, model2 = None,
+def repeated_forward_astar(maze_array: np.array, start_pos: tuple, goal_pos: tuple, model1, model2=None,
                            is_field_of_view_explored: bool = True):
     final_paths = list()
     total_actions = 0

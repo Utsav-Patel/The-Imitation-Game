@@ -13,7 +13,7 @@ INF = 1e9
 
 FILE_PREFIX = "20x20"
 FILE_SUFFIX = "new"
-TRAIN_DATA_PREFIX = "10_to_35_probability_and_8000_each"
+TRAIN_DATA_PREFIX = "10_to_35_probability_and_7000_each"
 VALIDATION_TEST_DATA_PREFIX = "validation_plus_test"
 
 CHECKPOINT_FILEPATH = os.path.join(PROJECT_PATH, "checkpoints", "project" + str(PROJECT_NO), ARCHITECTURE_TYPE,
@@ -31,6 +31,8 @@ STATE_OF_THE_ART_MODEL_PROJECT1_CNN_CHECKPOINT_PATH = os.path.join(PROJECT_PATH,
 
 PROJECT2_DATA_PATH = os.path.join(PROJECT_PATH, "data", "project" + str(PROJECT_NO), FILE_PREFIX,
                                   TRAIN_DATA_PREFIX + ".pkl")
+PROJECT2_VALIDATION_PATH = os.path.join(PROJECT_PATH, "data", "project" + str(PROJECT_NO), FILE_PREFIX,
+                                        VALIDATION_TEST_DATA_PREFIX + ".pkl")
 
 STARTING_POSITION_OF_AGENT = (0, 0)
 GOAL_POSITION_OF_AGENT = (NUM_ROWS - 1, NUM_COLS - 1)

@@ -11,16 +11,16 @@ import multiprocessing
 
 from src.TheExampleInferenceAgent import TheExampleInferenceAgent
 from helpers.helper import generate_grid_with_probability_p
-from constants import GOAL_POSITION_OF_AGENT, INF, PROJECT2_DATA_PATH
+from constants import GOAL_POSITION_OF_AGENT, INF, PROJECT2_DATA_PATH, PROJECT2_VALIDATION_PATH
 
 # Just to check how much time the code took
 print('Start running this file at', datetime.now().strftime("%m-%d-%Y %H-%M-%S"))
 
-start_value_of_probability = 0.10
-end_value_of_probability = 0.35
+start_value_of_probability = 0.17
+end_value_of_probability = 0.30
 
-num_uniform_samples = 26
-num_times_run_for_each_probability = 8000
+num_uniform_samples = 14
+num_times_run_for_each_probability = 1000
 
 # List of probability values
 list_of_probability_values = np.linspace(start_value_of_probability, end_value_of_probability, num_uniform_samples)
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     for i in range(len(categorise_list)):
         final_list = final_list + random.sample(categorise_list[i], minimum_class_size)
 
-    open_file = open(PROJECT2_DATA_PATH, "wb")
+    open_file = open(PROJECT2_VALIDATION_PATH, "wb")
     pickle.dump(final_list, open_file)
     open_file.close()
 
