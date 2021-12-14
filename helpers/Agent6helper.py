@@ -564,7 +564,7 @@ def forward_execution(maze: list, false_negative_rates: np.ndarray, maze_numpy:n
                 #print(children[cur_pos],'-----------')
                 data.append({
                     'current_pos': cur_pos,
-                    'input': np.stack((maze_numpy.copy(), num_examinations.copy(), utility_function.copy())),
+                    'input': np.stack((maze_numpy.copy(), num_examinations.copy())),
                     'output': find_output(cur_pos, children[cur_pos])
                 })
 

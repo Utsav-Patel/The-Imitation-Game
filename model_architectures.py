@@ -35,7 +35,7 @@ def create_model_project3_dense_10x10():
         #tf.keras.layers.Dense(2048, activation='relu'),
         #tf.keras.layers.Dense(1024, activation='relu'),
         #tf.keras.layers.Dense(512, activation='relu'),
-        tf.keras.layers.Dense(256, activation='relu', input_shape=(300,)),
+        tf.keras.layers.Dense(256, activation='relu', input_shape=(200,)),
         tf.keras.layers.Dense(128, activation='relu'),
         # tf.keras.layers.Dropout(0.2),
         tf.keras.layers.Dense(64, activation='relu'),
