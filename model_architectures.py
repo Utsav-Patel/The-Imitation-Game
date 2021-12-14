@@ -31,7 +31,7 @@ def create_model_project1_dense_10x10():
 def create_model_project3_dense_10x10():
     model = tf.keras.models.Sequential([
         # tf.keras.layers.Flatten(input_shape=(28, 28)),
-        tf.keras.layers.Dense(2048, activation='relu', input_shape=(100,)),
+        tf.keras.layers.Dense(2048, activation='relu', input_shape=(300,)),
         tf.keras.layers.Dense(1024, activation='relu'),
         tf.keras.layers.Dense(512, activation='relu'),
         tf.keras.layers.Dense(256, activation='relu'),
