@@ -518,7 +518,7 @@ def update_status(maze: list, false_negative_rates: np.ndarray, maze_numpy:np.nd
 
 
 def forward_execution(maze: list, false_negative_rates: np.ndarray, maze_numpy:np.ndarray, maze_array: np.array, start_pos: tuple,
-                      goal_pos: tuple, children: dict, data: list, p_of_containing_target: np.ndarray, project_no: int = 3, architecture_type: str = 'dense'):
+                      goal_pos: tuple, children: dict, data: list, p_of_containing_target: np.ndarray, num_examinations: np.ndarray, project_no: int = 3, architecture_type: str = 'dense'):
     """
     This is the repeated forward function which can be used with any algorithm (astar or bfs). This function will
     repeatedly call corresponding algorithm function until it reaches goal or finds out there is no path till goal.
@@ -564,7 +564,7 @@ def forward_execution(maze: list, false_negative_rates: np.ndarray, maze_numpy:n
                 #print(children[cur_pos],'-----------')
                 data.append({
                     'current_pos': cur_pos,
-                    'input': np.stack((maze_numpy.copy(), utility_function.copy())),
+                    'input': np.stack((maze_numpy.copy(), num_examinations.copy(), utility_function.copy())),
                     'output': find_output(cur_pos, children[cur_pos])
                 })
 

@@ -51,6 +51,8 @@ class Agent(ABC):
         self.children = dict()
         self.current_estimated_goal = list()
         self.num_examinations = 0
+        
+        self.maze_exam_numpy = np.zeros((NUM_ROWS, NUM_COLS))
 
         self.num_confirmed_cells = 0
         self.num_confirmed_blocked_cells = 0
@@ -100,6 +102,7 @@ class Agent(ABC):
         self.current_estimated_goal = list()
         
         self.maze_numpy = np.zeros((NUM_ROWS, NUM_COLS)) + UNVISITED_NUMBER
+        self.maze_exam_numpy = np.zeros((NUM_ROWS, NUM_COLS))
         
         self.num_confirmed_cells = 0
         self.num_confirmed_blocked_cells = 0
