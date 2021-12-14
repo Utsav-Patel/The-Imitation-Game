@@ -2,7 +2,7 @@ import os
 
 PROJECT_PATH = os.path.dirname(__file__)
 PROJECT_NO = 2
-ARCHITECTURE_TYPE = 'cnn'
+ARCHITECTURE_TYPE = 'dense'
 
 NUM_COLS = 20
 NUM_ROWS = 20
