@@ -29,7 +29,8 @@ class DataGenerator(keras.utils.Sequence):
         X, y = self.__data_generation(indexes)
         final_x = list()
         for dct in X:
-            final_x.append(pre_process_input(dct['input'], dct['current_pos'], project_no=2, architecture_type='dense'))
+            final_x.append(pre_process_input(dct['input'], dct['current_pos'], project_no=2, architecture_type='dense',
+                                             sensed=dct['sensed']))
 
         return np.array(final_x), y
 
