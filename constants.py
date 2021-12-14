@@ -13,7 +13,7 @@ INF = 1e9
 
 FILE_PREFIX = "20x20"
 FILE_SUFFIX = "new"
-TRAIN_DATA_PREFIX = "10_to_35_probability_and_16000_each"
+TRAIN_DATA_PREFIX = "10_to_35_probability_and_8000_each"
 VALIDATION_TEST_DATA_PREFIX = "validation_plus_test"
 
 CHECKPOINT_FILEPATH = os.path.join(PROJECT_PATH, "checkpoints", "project" + str(PROJECT_NO), ARCHITECTURE_TYPE,
