@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from constants2 import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, X, Y, UNVISITED_NUMBER
+from constants import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, X, Y, UNVISITED_NUMBER
 from src.Cell import Cell
 from helpers.helper import astar_search_list, check
 
