@@ -28,7 +28,7 @@ start_value_of_probability = 0.21
 end_value_of_probability = 0.30
 
 num_uniform_samples = 10
-num_times_run_for_each_probability = 1000
+num_times_run_for_each_probability = 50
 
 # List of probability values
 list_of_probability_values = np.linspace(start_value_of_probability, end_value_of_probability, num_uniform_samples)
