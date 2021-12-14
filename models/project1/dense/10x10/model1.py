@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from tensorflow.keras.utils import to_categorical
 
-from constants2 import NUM_ROWS, NUM_COLS, CHECKPOINT_FILEPATH, DATA_PATH, X, Y, NEIGHBOR_WEIGHT, CURRENT_CELL_WEIGHT
+from constants import NUM_ROWS, NUM_COLS, CHECKPOINT_FILEPATH, DATA_PATH, X, Y, NEIGHBOR_WEIGHT, CURRENT_CELL_WEIGHT
 from model_architectures import create_model_project1_agent_10x10
 from helpers.helper import check
 

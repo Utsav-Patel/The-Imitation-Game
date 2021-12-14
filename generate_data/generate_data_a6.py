@@ -12,12 +12,16 @@ from datetime import datetime
 import pickle
 import random
 
-from constants2 import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID, NUM_ROWS, NUM_COLS, NUM_ITERATIONS, X, Y, DATA_PATH
+from constants2 import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID, NUM_ROWS, NUM_COLS, NUM_ITERATIONS, X, Y, DATA_PATH, VALIDATION_TEST_PATH
 from helpers.Agent6helper import generate_grid_with_probability_p, compute_explored_cells_from_path, \
     length_of_path_from_source_to_goal, examine_and_propagate_probability, generate_target_position
 from src.Agent6 import Agent6
 
-
+        # Print when the agent started it's execution
+print('Starting agent 8')
+now = datetime.now()
+dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+print("date and time =", dt_string)
 agent = Agent6()
 
 start_value_of_probability = 0.21
@@ -49,11 +53,7 @@ def find_the_target(p):
     # Run agent 6,7, and 8 for the above generate grid and target position
     for agent_num in agents:
 
-        # Print when the agent started it's execution
-        print('Starting agent', agent_num)
-        now = datetime.now()
-        dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-        print("date and time =", dt_string)
+
 
         # Reset agent before using it
         agent.reset()
@@ -86,11 +86,7 @@ def find_the_target(p):
 
 
 
-        # End the execution of the current run
-        print('ending agent', agent_num)
-        now = datetime.now()
-        dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-        print("date and time =", dt_string)
+
     return data
 
 #result = find_the_target(1)
@@ -135,11 +131,16 @@ if __name__ == "__main__":
     for i in range(len(categorise_list)):
         final_list = final_list + random.sample(categorise_list[i], minimum_class_size)
 
-    open_file = open(DATA_PATH, "wb")
+    open_file = open(VALIDATION_TEST_PATH, "wb")
     pickle.dump(final_list, open_file)
     open_file.close()
     
-    
+    # End the execution of the current run
+    print('ending agent 8')
+    now = datetime.now()
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+    print("date and time =", dt_string)
+
     end_time = time.time()
 
 

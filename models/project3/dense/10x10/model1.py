@@ -13,7 +13,7 @@ from tensorflow.keras.utils import to_categorical
 
 from constants2 import NUM_ROWS, NUM_COLS, CHECKPOINT_FILEPATH, DATA_PATH, X, Y, NEIGHBOR_WEIGHT, CURRENT_CELL_WEIGHT,\
     VALIDATION_TEST_PATH
-from model_architectures import create_model_project1_dense_20x20
+from model_architectures import create_model_project3_dense_10x10
 from helpers.helper import check
 
 
@@ -66,7 +66,7 @@ print("y validation shape", y_val.shape)
 print("X test shape", X_test.shape)
 print("y test shape", y_test.shape)
 
-model = create_model_project1_dense_20x20()
+model = create_model_project3_dense_10x10()
 model.summary()
 
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
