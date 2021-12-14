@@ -65,7 +65,7 @@ class Agent6(Agent):
                 if (project_no == 3) and (architecture_type == 'dense'):
                     data.append({
                         'current_pos': self.current_position,
-                        'input': np.stack((self.maze_numpy.copy(), self.maze_exam_numpy.copy())),
+                        'input': np.stack((self.maze_numpy.copy(), utility_function.copy()*1000)),
                         'output': 4
                     })
         is_target_found = examine_and_propagate_probability(self.maze, self.probability_of_containing_target,
