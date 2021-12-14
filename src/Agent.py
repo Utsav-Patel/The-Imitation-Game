@@ -98,7 +98,9 @@ class Agent(ABC):
         self.parents = dict()
         self.children = dict()
         self.current_estimated_goal = list()
-
+        
+        self.maze_numpy = np.zeros((NUM_ROWS, NUM_COLS)) + UNVISITED_NUMBER
+        
         self.num_confirmed_cells = 0
         self.num_confirmed_blocked_cells = 0
 

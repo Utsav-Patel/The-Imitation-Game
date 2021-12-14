@@ -502,21 +502,20 @@ def update_status(maze: list, false_negative_rates: np.ndarray, maze_numpy:np.nd
             false_negative_rates[cur_pos[0]][cur_pos[1]] = FLAT_FALSE_NEGATIVE_RATE
             maze[cur_pos[0]][cur_pos[1]].is_blocked = False
             maze[cur_pos[0]][cur_pos[1]].is_visited = True
-            maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER * 50* UNBLOCKED_WEIGHT
+            maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER 
         elif maze_array[cur_pos[0]][cur_pos[1]] == 3:
             false_negative_rates[cur_pos[0]][cur_pos[1]] = HILLY_FALSE_NEGATIVE_RATE
             maze[cur_pos[0]][cur_pos[1]].is_blocked = False
             maze[cur_pos[0]][cur_pos[1]].is_visited = True
-            maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER * 50* UNBLOCKED_WEIGHT
+            maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER
         elif maze_array[cur_pos[0]][cur_pos[1]] == 4:
             false_negative_rates[cur_pos[0]][cur_pos[1]] = FOREST_FALSE_NEGATIVE_RATE
             maze[cur_pos[0]][cur_pos[1]].is_blocked = False
             maze[cur_pos[0]][cur_pos[1]].is_visited = True
-            maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER * 50* UNBLOCKED_WEIGHT
+            maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER 
         else:
             raise Exception("Invalid value in maze_array")
-    else:
-        maze_numpy[cur_pos[0]][cur_pos[1]] += BLOCKED_NUMBER
+
 
 def forward_execution(maze: list, false_negative_rates: np.ndarray, maze_numpy:np.ndarray, maze_array: np.array, start_pos: tuple,
                       goal_pos: tuple, children: dict, data: list, p_of_containing_target: np.ndarray, project_no: int = 3, architecture_type: str = 'dense'):
