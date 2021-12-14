@@ -12,9 +12,9 @@ from datetime import datetime
 import pickle
 import random
 
-from constants2 import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID, NUM_ROWS, NUM_COLS, NUM_ITERATIONS, X, Y, DATA_PATH, VALIDATION_TEST_PATH
+from constants2 import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID, NUM_ROWS, NUM_COLS, NUM_ITERATIONS, X, Y, DATA_PATH, VALIDATION_TEST_PATH, ONE_PROBABILITY
 from helpers.Agent6helper import generate_grid_with_probability_p, compute_explored_cells_from_path, \
-    length_of_path_from_source_to_goal, examine_and_propagate_probability, generate_target_position
+    length_of_path_from_source_to_goal, examine_and_propagate_probability, generate_target_position, length_of_path_from_source_to_all_nodes
 from src.Agent6 import Agent6
 
         # Print when the agent started it's execution
@@ -28,7 +28,7 @@ start_value_of_probability = 0.21
 end_value_of_probability = 0.30
 
 num_uniform_samples = 10
-num_times_run_for_each_probability = 1000
+num_times_run_for_each_probability = 100
 
 # List of probability values
 list_of_probability_values = np.linspace(start_value_of_probability, end_value_of_probability, num_uniform_samples)
@@ -77,9 +77,14 @@ def find_the_target(p):
                                                   agent.current_estimated_goal, agent.current_estimated_goal)
                 agent.pre_planning(agent_num)
                 agent.planning(agent.current_estimated_goal)
-
+            
+            probability_of_finding_target = np.multiply(agent.probability_of_containing_target,
+                                                ONE_PROBABILITY - agent.false_negative_rates)
+            distance_array = length_of_path_from_source_to_all_nodes(agent.maze, agent.current_position)
+            distance_array[agent.current_position[0]][agent.current_position[1]] = INF
+            utility_function = np.divide(probability_of_finding_target, distance_array)
             # Execute on the generated path
-            agent.execution(random_maze, data)
+            agent.execution(random_maze, data, utility_function)
 
             # Examine the current cell
             target_found = agent.examine(target_pos, data)
@@ -131,7 +136,7 @@ if __name__ == "__main__":
     for i in range(len(categorise_list)):
         final_list = final_list + random.sample(categorise_list[i], minimum_class_size)
 
-    open_file = open(DATA_PATH, "wb")
+    open_file = open(VALIDATION_TEST_PATH, "wb")
     pickle.dump(final_list, open_file)
     open_file.close()
     

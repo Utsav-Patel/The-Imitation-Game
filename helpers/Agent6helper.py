@@ -554,17 +554,13 @@ def forward_execution(maze: list, false_negative_rates: np.ndarray, maze_numpy:n
         
         
         if data is not None:
-            probability_of_finding_target = np.multiply(p_of_containing_target,
-                                                ONE_PROBABILITY - false_negative_rates)
-            distance_array = length_of_path_from_source_to_all_nodes(maze, cur_pos)
-            distance_array[cur_pos[0]][cur_pos[1]] = INF
-            utility_function = np.divide(probability_of_finding_target, distance_array)
+            
             if (project_no == 3) and (architecture_type == 'dense'):
                 #print('current position:', cur_pos, 'output:', children[cur_pos])
                 #print(children[cur_pos],'-----------')
                 data.append({
                     'current_pos': cur_pos,
-                    'input': np.stack((maze_numpy.copy(), utility_function.copy()*1000)),
+                    'input': np.stack((maze_numpy.copy(), num_examinations.copy()*1000)),
                     'output': find_output(cur_pos, children[cur_pos])
                 })
 

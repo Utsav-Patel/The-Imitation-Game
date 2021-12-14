@@ -19,7 +19,7 @@ class Agent6(Agent):
         super().__init__()
 
     # Override execution method of Agent class
-    def execution(self, full_maze: np.array, data, target_pos: tuple = None):
+    def execution(self, full_maze: np.array, data, utility_function, target_pos: tuple = None):
         """
         Agent 6,7, and 8's execution method
         :param full_maze: origin maze array
@@ -29,6 +29,7 @@ class Agent6(Agent):
 
         # Calculate children from parents dictionary
         self.children = parent_to_child_dict(self.parents, self.current_estimated_goal)
+        self.maze_exam_numpy = utility_function
         #print(self.current_position, '        ', self.children)
         # Agent will move along the planned path to reach current estimated goal
         current_path = forward_execution(self.maze, self.false_negative_rates,self.maze_numpy, full_maze,
@@ -54,7 +55,7 @@ class Agent6(Agent):
         
         if self.current_position == self.current_estimated_goal:
             self.num_examinations += 1  
-            self.maze_exam_numpy[self.current_position[0]][self.current_position[1]] += 1
+            #self.maze_exam_numpy[self.current_position[0]][self.current_position[1]] += 1
             
             probability_of_finding_target = np.multiply(self.probability_of_containing_target,
                                                 ONE_PROBABILITY - self.false_negative_rates)
@@ -65,7 +66,7 @@ class Agent6(Agent):
                 if (project_no == 3) and (architecture_type == 'dense'):
                     data.append({
                         'current_pos': self.current_position,
-                        'input': np.stack((self.maze_numpy.copy(), utility_function.copy()*1000)),
+                        'input': np.stack((self.maze_numpy.copy(), self.maze_exam_numpy.copy()*1000)),
                         'output': 4
                     })
         is_target_found = examine_and_propagate_probability(self.maze, self.probability_of_containing_target,
