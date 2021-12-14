@@ -329,8 +329,6 @@ def pre_process_input(array: np.array, current_position: tuple, project_no: int 
                 neighbour = (current_position[0] + X[ind2], current_position[1] + Y[ind2])
                 if check(neighbour, TRAINED_MODEL_NUM_ROWS, TRAINED_MODEL_NUM_ROWS):
                     array[neighbour[0]][neighbour[1]] *= NEIGHBOR_WEIGHT
-            # 'sensed': 1 * self.num_confirmed_blocked + 10 * self.num_sensed_blocked +
-            # 100 * self.num_confirmed_unblocked + 1000 * self.num_sensed_unblocked,
             num_confirmed_blocked = sensed % 10
             num_sensed_blocked = np.floor(sensed / 10) % 10
             num_confirmed_unblocked = np.floor(sensed / 100) % 10
@@ -339,7 +337,23 @@ def pre_process_input(array: np.array, current_position: tuple, project_no: int 
                              num_sensed_unblocked)).reshape(1, -1)
 
         elif architecture_type == 'cnn':
-            pass
+            position = np.zeros((TRAINED_MODEL_NUM_ROWS, TRAINED_MODEL_NUM_COLS))
+            position[current_position[0]][current_position[1]] = CURRENT_CELL_WEIGHT
+            for ind2 in range(len(X)):
+                neighbor = (current_position[0] + X[ind2], current_position[1] + Y[ind2])
+                if check(neighbor, TRAINED_MODEL_NUM_ROWS, TRAINED_MODEL_NUM_COLS):
+                    position[neighbor[0]][neighbor[1]] = NEIGHBOR_WEIGHT
+
+            num_confirmed_blocked = sensed % 10
+            num_sensed_blocked = np.floor(sensed / 10) % 10
+            num_confirmed_unblocked = np.floor(sensed / 100) % 10
+            num_sensed_unblocked = np.floor(sensed / 1000) % 10
+
+            if is_testing:
+                return np.expand_dims(np.stack(((array % 100) - 1, np.floor(array / 100), position)), axis=0)
+            else:
+                return np.stack((array, position, num_confirmed_blocked, num_sensed_blocked, num_confirmed_unblocked,
+                                 num_sensed_unblocked))
 
 
 def explore_neighbors(maze: Maze, maze_array: np.array, cur_pos: tuple, project_no: int = 1,
