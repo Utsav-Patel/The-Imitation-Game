@@ -638,7 +638,8 @@ def parent_to_child_dict(parent: dict, starting_position: tuple):
     return child
 
 
-def sense_current_node(maze, current_position: tuple, full_maze: np.array):
+def sense_current_node(maze, current_position: tuple, full_maze: np.array, num_confirmed_blocked: np.array,
+                       num_sensed_blocked: np.array, num_confirmed_unblocked: np.array, num_sensed_unblocked: np.array):
     """
     This function is used to sense the current node and update details in the knowledge base
     :param maze: Maze object
@@ -655,15 +656,23 @@ def sense_current_node(maze, current_position: tuple, full_maze: np.array):
             if maze[neighbor[0]][neighbor[1]].is_blocked:
                 maze[current_position[0]][current_position[1]].num_confirmed_blocked += 1
                 maze[current_position[0]][current_position[1]].num_sensed_blocked += 1
+
+                num_confirmed_blocked[current_position[0]][current_position[1]] += 1
+                num_sensed_blocked[current_position[0]][current_position[1]] += 1
             else:
                 maze[current_position[0]][current_position[1]].num_confirmed_unblocked += 1
                 maze[current_position[0]][current_position[1]].num_sensed_unblocked += 1
+
+                num_confirmed_unblocked[current_position[0]][current_position[1]] += 1
+                num_sensed_unblocked[current_position[0]][current_position[1]] += 1
         else:
 
-            if full_maze[neighbor[0]][neighbor[1]] == 1:
+            if full_maze[neighbor[0]][neighbor[1]] == BLOCKED_NUMBER:
                 maze[current_position[0]][current_position[1]].num_sensed_blocked += 1
+                num_sensed_blocked[current_position[0]][current_position[1]] += 1
             else:
                 maze[current_position[0]][current_position[1]].num_sensed_unblocked += 1
+                num_sensed_unblocked[current_position[0]][current_position[1]] += 1
 
 
 def can_infer(num_sensed_blocked: int, num_confirmed_blocked: int, num_sensed_unblocked: int,
@@ -687,7 +696,9 @@ def can_infer(num_sensed_blocked: int, num_confirmed_blocked: int, num_sensed_un
     return False
 
 
-def find_block_while_inference(maze: list, current_position: tuple, full_maze: np.array, entire_trajectory_nodes=None):
+def find_block_while_inference(maze: list, current_position: tuple, full_maze: np.array, maze_numpy: np.array,
+                               num_confirmed_blocked: np.array, num_confirmed_unblocked: np.array,
+                               entire_trajectory_nodes=None):
     """
     This function helps us find blocks in the path if they exist while also performing inference.
     :param maze: This agents copy of the maze.
@@ -699,6 +710,8 @@ def find_block_while_inference(maze: list, current_position: tuple, full_maze: n
 
     # We create this queue to help us store all the variables that are going to be confirmed and subsequently store
     # those cells in a set so that we can access them in constant time.
+    if entire_trajectory_nodes is None:
+        entire_trajectory_nodes = list()
     inference_items = Queue()
     items_in_the_queue = set()
     is_block_node_in_current_path = False
@@ -718,8 +731,11 @@ def find_block_while_inference(maze: list, current_position: tuple, full_maze: n
 
             maze[current_node[0]][current_node[1]].is_confirmed = True
 
-            if full_maze[current_node[0]][current_node[1]] == 1:
+            if full_maze[current_node[0]][current_node[1]] == BLOCKED_NUMBER:
                 maze[current_node[0]][current_node[1]].is_blocked = True
+
+                if current_node == current_position:
+                    maze_numpy[current_node[0]][current_node[1]] = BLOCKED_NUMBER
 
                 # If current node is in the trajectory then we should return True for this function
                 if current_node in entire_trajectory_nodes:
@@ -727,14 +743,23 @@ def find_block_while_inference(maze: list, current_position: tuple, full_maze: n
             else:
                 maze[current_node[0]][current_node[1]].is_blocked = False
 
+                if current_node == current_position:
+                    maze_numpy[current_node[0]][current_node[1]] = UNBLOCKED_NUMBER
+
             # Iterate over eight neighbors, update their status and add it into the queue
             for neighbor in maze[current_node[0]][current_node[1]].eight_neighbors:
                 if not maze[neighbor[0]][neighbor[1]].is_visited:
                     continue
                 if maze[current_node[0]][current_node[1]].is_blocked:
                     maze[neighbor[0]][neighbor[1]].num_confirmed_blocked += 1
+
+                    if current_node == current_position:
+                        num_confirmed_blocked[neighbor[0]][neighbor[1]] += 1
                 else:
                     maze[neighbor[0]][neighbor[1]].num_confirmed_unblocked += 1
+
+                    if current_node == current_position:
+                        num_confirmed_unblocked[neighbor[0]][neighbor[1]] += 1
 
                 if not (neighbor in items_in_the_queue):
                     items_in_the_queue.add(neighbor)
