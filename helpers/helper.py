@@ -565,15 +565,20 @@ def make_action(maze: Maze, model, current_position: tuple, num_samples: int, pr
             else:
                 array = None
         else:
-            num_times_cell_visited = maze.num_times_cell_visited.copy()
-            maze_numpy = maze.maze_numpy.copy()
+            num_times_cell_visited = maze.num_times_cell_visited[start_pos[0]: start_pos[0] + TRAINED_MODEL_NUM_ROWS,
+                        start_pos[1]: start_pos[1] + TRAINED_MODEL_NUM_COLS].copy()
+            maze_numpy = maze.maze_numpy[start_pos[0]: start_pos[0] + TRAINED_MODEL_NUM_ROWS,
+                        start_pos[1]: start_pos[1] + TRAINED_MODEL_NUM_COLS].copy()
             maze_numpy[maze_numpy == UNBLOCKED_NUMBER] *= UNBLOCKED_WEIGHT
             array = maze_numpy - num_times_cell_visited
         action += np.array(model.predict(pre_process_input(array, (current_position[0] - start_pos[0],
                                                                    current_position[1] - start_pos[1]),
                                                            project_no=project_no,
                                                            architecture_type=architecture_type, is_testing=True,
-                                                           sensed=sensed))[0])
+                                                           sensed=sensed[start_pos[0]: start_pos[0] +
+                                                                                       TRAINED_MODEL_NUM_ROWS,
+                                                                  start_pos[1]: start_pos[1] + TRAINED_MODEL_NUM_COLS]
+                                                           .copy()))[0])
     return np.argmax(action)
 
 
