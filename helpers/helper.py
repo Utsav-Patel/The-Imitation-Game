@@ -358,7 +358,7 @@ def pre_process_input(array: np.array, current_position: tuple, project_no: int 
 
             if is_testing:
                 return np.expand_dims(np.stack((array, position, num_confirmed_blocked, num_sensed_blocked,
-                                                num_confirmed_unblocked, num_sensed_unblocked), axis=0))
+                                                num_confirmed_unblocked, num_sensed_unblocked)), axis=0)
             else:
                 return np.stack((array, position, num_confirmed_blocked, num_sensed_blocked, num_confirmed_unblocked,
                                  num_sensed_unblocked))
