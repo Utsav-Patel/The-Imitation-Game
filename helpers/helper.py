@@ -307,7 +307,10 @@ def pre_process_input(array: np.array, current_position: tuple, project_no: int 
                 neighbour = (current_position[0] + X[ind2], current_position[1] + Y[ind2])
                 if check(neighbour, TRAINED_MODEL_NUM_ROWS, TRAINED_MODEL_NUM_ROWS):
                     array[neighbour[0]][neighbour[1]] *= NEIGHBOR_WEIGHT
-            return array.reshape(1, -1)
+            if is_testing:
+                return array.reshape(1, -1)
+            else:
+                return array.reshape(-1)
 
         elif architecture_type == 'cnn':
             position = np.zeros((TRAINED_MODEL_NUM_ROWS, TRAINED_MODEL_NUM_COLS))
@@ -333,8 +336,12 @@ def pre_process_input(array: np.array, current_position: tuple, project_no: int 
             num_sensed_blocked = np.floor(sensed / 10) % 10
             num_confirmed_unblocked = np.floor(sensed / 100) % 10
             num_sensed_unblocked = np.floor(sensed / 1000) % 10
-            return np.stack((array, num_confirmed_blocked, num_sensed_blocked, num_confirmed_unblocked,
-                             num_sensed_unblocked)).reshape(-1)
+            if is_testing:
+                return np.stack((array, num_confirmed_blocked, num_sensed_blocked, num_confirmed_unblocked,
+                                 num_sensed_unblocked)).reshape(1, -1)
+            else:
+                return np.stack((array, num_confirmed_blocked, num_sensed_blocked, num_confirmed_unblocked,
+                                 num_sensed_unblocked)).reshape(-1)
 
         elif architecture_type == 'cnn':
             position = np.zeros((TRAINED_MODEL_NUM_ROWS, TRAINED_MODEL_NUM_COLS))
@@ -350,14 +357,15 @@ def pre_process_input(array: np.array, current_position: tuple, project_no: int 
             num_sensed_unblocked = np.floor(sensed / 1000) % 10
 
             if is_testing:
-                return np.expand_dims(np.stack(((array % 100) - 1, np.floor(array / 100), position)), axis=0)
+                return np.expand_dims(np.stack((array, position, num_confirmed_blocked, num_sensed_blocked,
+                                                num_confirmed_unblocked, num_sensed_unblocked), axis=0))
             else:
                 return np.stack((array, position, num_confirmed_blocked, num_sensed_blocked, num_confirmed_unblocked,
                                  num_sensed_unblocked))
 
 
 def explore_neighbors(maze: Maze, maze_array: np.array, cur_pos: tuple, project_no: int = 1,
-                      architecture_type: str = 'dense'):
+                      architecture_type: str = 'dense', agent=None):
     if project_no == 1 and architecture_type == 'dense':
         if not maze.maze[cur_pos[0]][cur_pos[1]].is_confirmed:
             maze.maze[cur_pos[0]][cur_pos[1]].is_confirmed = True
@@ -391,6 +399,22 @@ def explore_neighbors(maze: Maze, maze_array: np.array, cur_pos: tuple, project_
                         maze.maze_numpy[neighbour[0]][neighbour[1]] = BLOCKED_NUMBER
                     else:
                         maze.maze_numpy[neighbour[0]][neighbour[1]] = UNBLOCKED_NUMBER
+
+    elif project_no == 2:
+        maze.maze[cur_pos[0]][cur_pos[1]].is_confirmed = True
+        maze.maze_numpy[cur_pos[0]][cur_pos[1]] = UNBLOCKED_NUMBER
+        maze.num_times_cell_visited[cur_pos[0]][cur_pos[1]] += 1
+
+        if agent.maze[cur_pos[0]][cur_pos[1]].is_visited:
+            agent.maze[cur_pos[0]][cur_pos[1]].is_visited = True
+            sense_current_node(agent.maze, cur_pos, maze,
+                               num_confirmed_blocked=agent.num_confirmed_blocked,
+                               num_sensed_blocked=agent.num_sensed_blocked,
+                               num_confirmed_unblocked=agent.num_confirmed_unblocked,
+                               num_sensed_unblocked=agent.num_sensed_unblocked)
+            # full_maze[children[current_position][0]][children[current_position][1]] == BLOCKED_NUMBER:
+        find_block_while_inference(agent.maze, cur_pos, maze_array, maze.maze_numpy, agent.num_confirmed_blocked,
+                                   agent.num_confirmed_unblocked)
 
 
 def repeated_forward(maze: Maze, maze_array: np.array, data: list, start_pos: tuple, goal_pos: tuple,
@@ -525,7 +549,7 @@ def bootstraping(maze: Maze, current_position: tuple, num_rows: int, num_columns
 
 
 def make_action(maze: Maze, model, current_position: tuple, num_samples: int, project_no: int = 1,
-                architecture_type='dense'):
+                architecture_type='dense', sensed: np.array = None):
     start_positions = bootstraping(maze, current_position, NUM_ROWS, NUM_COLS, num_samples)
     action = np.zeros(4)
     for start_pos in start_positions:
@@ -545,7 +569,8 @@ def make_action(maze: Maze, model, current_position: tuple, num_samples: int, pr
         action += np.array(model.predict(pre_process_input(array, (current_position[0] - start_pos[0],
                                                                    current_position[1] - start_pos[1]),
                                                            project_no=project_no,
-                                                           architecture_type=architecture_type, is_testing=True))[0])
+                                                           architecture_type=architecture_type, is_testing=True,
+                                                           sensed=sensed))[0])
     return np.argmax(action)
 
 
@@ -662,23 +687,9 @@ def generate_random_position(maze: Maze, current_position: tuple):
 
 
 def ml_agent_dfs(maze: Maze, full_maze: np.array, start_position: tuple, goal_position: tuple, project_no: int = 1,
-                 architecture_type: str = 'dense', model=None):
-    # checkpoint_dir = os.path.dirname(checkpoint_directory)
-    # latest = tf.train.latest_checkpoint(checkpoint_directory)
-    #
-    # if project_no == 1:
-    #     if architecture_type == 'dense':
-    #         model = create_model_project1_dense_20x20()
-    #     elif architecture_type == 'cnn':
-    #         model = create_model_project1_cnn_20x20()
-    #     else:
-    #         raise Exception('current architecture type is not available')
-    # else:
-    #     raise Exception('project number is not available')
-    #
-    # model.load_weights(latest)
+                 architecture_type: str = 'dense', model=None, agent=None):
     current_position = start_position
-    num_samples = 10
+    num_samples = 2
     trajectory_length = 0
     predicted_blocked_cells = 0
     predicted_out_of_maze_cells = 0
@@ -689,10 +700,15 @@ def ml_agent_dfs(maze: Maze, full_maze: np.array, start_position: tuple, goal_po
         # Exploration
         if trajectory_length > TRAJECTORY_LENGTH_THRESHOLD:
             return trajectory_length, 0, predicted_blocked_cells, predicted_out_of_maze_cells
-        explore_neighbors(maze, full_maze, current_position, project_no=project_no, architecture_type=architecture_type)
-
+        explore_neighbors(maze, full_maze, current_position, project_no=project_no, architecture_type=architecture_type,
+                          agent=agent)
+        if agent is not None:
+            sensed = 1 * agent.num_confirmed_blocked + 10 * agent.num_sensed_blocked + \
+                     100 * agent.num_confirmed_unblocked + 1000 * agent.num_sensed_unblocked
+        else:
+            sensed = None
         action = make_action(maze, model, current_position, num_samples, project_no=project_no,
-                             architecture_type=architecture_type)
+                             architecture_type=architecture_type, sensed=sensed)
 
         # if action == TARGET_CANNOT_BE_REACHED_NUMBER:
         #     print(maze.maze_numpy)

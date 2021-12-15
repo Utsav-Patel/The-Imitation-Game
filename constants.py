@@ -4,8 +4,8 @@ PROJECT_PATH = os.path.dirname(__file__)
 PROJECT_NO = 2
 ARCHITECTURE_TYPE = 'dense'
 
-NUM_COLS = 20
-NUM_ROWS = 20
+NUM_COLS = 50
+NUM_ROWS = 50
 
 TRAINED_MODEL_NUM_ROWS = 20
 TRAINED_MODEL_NUM_COLS = 20
@@ -27,6 +27,10 @@ VALIDATION_TEST_PATH = os.path.join(PROJECT_PATH, "data", "project" + str(PROJEC
 STATE_OF_THE_ART_MODEL_PROJECT1_DENSE_CHECKPOINT_PATH = os.path.join(PROJECT_PATH, "checkpoints", "project1", "dense",
                                                                      FILE_PREFIX, FILE_SUFFIX)
 STATE_OF_THE_ART_MODEL_PROJECT1_CNN_CHECKPOINT_PATH = os.path.join(PROJECT_PATH, "checkpoints", "project1", "cnn",
+                                                                   FILE_PREFIX, FILE_SUFFIX)
+STATE_OF_THE_ART_MODEL_PROJECT2_DENSE_CHECKPOINT_PATH = os.path.join(PROJECT_PATH, "checkpoints", "project2", "dense",
+                                                                     FILE_PREFIX, FILE_SUFFIX)
+STATE_OF_THE_ART_MODEL_PROJECT2_CNN_CHECKPOINT_PATH = os.path.join(PROJECT_PATH, "checkpoints", "project1", "cnn",
                                                                    FILE_PREFIX, FILE_SUFFIX)
 
 PROJECT2_DATA_PATH = os.path.join(PROJECT_PATH, "data", "project" + str(PROJECT_NO), FILE_PREFIX,
