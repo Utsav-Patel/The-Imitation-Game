@@ -407,7 +407,7 @@ def explore_neighbors(maze: Maze, maze_array: np.array, cur_pos: tuple, project_
 
         if agent.maze[cur_pos[0]][cur_pos[1]].is_visited:
             agent.maze[cur_pos[0]][cur_pos[1]].is_visited = True
-            sense_current_node(agent.maze, cur_pos, maze,
+            sense_current_node(agent.maze, cur_pos, maze_array,
                                num_confirmed_blocked=agent.num_confirmed_blocked,
                                num_sensed_blocked=agent.num_sensed_blocked,
                                num_confirmed_unblocked=agent.num_confirmed_unblocked,
