@@ -565,7 +565,10 @@ def make_action(maze: Maze, model, current_position: tuple, num_samples: int, pr
             else:
                 array = None
         else:
-            array = None
+            num_times_cell_visited = maze.num_times_cell_visited.copy()
+            maze_numpy = maze.maze_numpy.copy()
+            maze_numpy[maze_numpy == UNBLOCKED_NUMBER] *= UNBLOCKED_WEIGHT
+            array = maze_numpy - num_times_cell_visited
         action += np.array(model.predict(pre_process_input(array, (current_position[0] - start_pos[0],
                                                                    current_position[1] - start_pos[1]),
                                                            project_no=project_no,
@@ -717,27 +720,33 @@ def ml_agent_dfs(maze: Maze, full_maze: np.array, start_position: tuple, goal_po
         trajectory_length += 1
         if check(next_position, NUM_COLS, NUM_ROWS):
             if full_maze[next_position[0]][next_position[1]] == BLOCKED_NUMBER:
-                maze.maze_numpy[next_position[0]][next_position[1]] += BLOCKED_NUMBER
-                # print('blocked cell')
-                # print(current_position)
-                # print(next_position)
 
-                predicted_blocked_cells += 1
+                if maze.maze_numpy[next_position[0]][next_position[1]] <= BLOCKED_NUMBER:
+                    maze.maze_numpy[next_position[0]][next_position[1]] += BLOCKED_NUMBER
+                    # print('blocked cell')
+                    # print(current_position)
+                    # print(next_position)
 
-                if previous_prediction == next_position:
-                    previous_frequency += 1
-                else:
-                    previous_prediction = next_position
-                    previous_frequency = 1
+                    predicted_blocked_cells += 1
 
-                if previous_frequency > 5:
-                    next_position = generate_random_position(maze, current_position)
-                    if next_position == current_position:
-                        return trajectory_length, 0, predicted_blocked_cells, predicted_out_of_maze_cells
+                    if previous_prediction == next_position:
+                        previous_frequency += 1
                     else:
-                        current_position = next_position
-                    previous_prediction = (-4, -4)
-                    previous_frequency = 0
+                        previous_prediction = next_position
+                        previous_frequency = 1
+
+                    if previous_frequency > 5:
+                        next_position = generate_random_position(maze, current_position)
+                        if next_position == current_position:
+                            return trajectory_length, 0, predicted_blocked_cells, predicted_out_of_maze_cells
+                        else:
+                            current_position = next_position
+                        previous_prediction = (-4, -4)
+                        previous_frequency = 0
+                else:
+                    maze.maze_numpy[next_position[0]][next_position[1]] = BLOCKED_NUMBER
+                    maze.maze[next_position[0]][next_position[1]].is_blocked = True
+                    maze.maze[next_position[0]][next_position[1]].is_confimed = True
             else:
                 current_position = next_position
                 previous_prediction = (-4, -4)
