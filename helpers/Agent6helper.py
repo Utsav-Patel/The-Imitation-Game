@@ -13,7 +13,7 @@ from queue import Queue
 
 from constants2 import NUM_COLS, NUM_ROWS, X, Y, INF, ONE_PROBABILITY, ZERO_PROBABILITY, STARTING_POSITION_OF_AGENT, \
     FLAT_FALSE_NEGATIVE_RATE, HILLY_FALSE_NEGATIVE_RATE, FOREST_FALSE_NEGATIVE_RATE, BLOCKED_NUMBER, UNBLOCKED_NUMBER, \
-    UNBLOCKED_WEIGHT
+    UNBLOCKED_WEIGHT, TRAINED_MODEL_NUM_ROWS, TRAINED_MODEL_NUM_COLS, CURRENT_CELL_WEIGHT, NEIGHBOR_WEIGHT
 
 
 def check(current_position: tuple, num_cols: int = NUM_COLS, num_rows: int = NUM_ROWS):
@@ -583,3 +583,20 @@ def find_output(current_position: tuple, next_position: tuple):
             return ind
 
     raise Exception("Invalid Input")
+    
+def pre_process_input(array: np.array, current_position: tuple, project_no: int = 3, architecture_type: str = 'cnn',
+                      is_testing: bool = False, sensed: np.array = None):
+    
+    if project_no == 3:
+
+        if architecture_type == 'cnn':
+            position = np.zeros((TRAINED_MODEL_NUM_ROWS, TRAINED_MODEL_NUM_COLS))
+            position[current_position[0]][current_position[1]] = CURRENT_CELL_WEIGHT
+            for ind2 in range(len(X)):
+                neighbor = (current_position[0] + X[ind2], current_position[1] + Y[ind2])
+                if check(neighbor, TRAINED_MODEL_NUM_ROWS, TRAINED_MODEL_NUM_COLS):
+                    position[neighbor[0]][neighbor[1]] = NEIGHBOR_WEIGHT
+
+            return np.stack((array[0], array[1], position))
+        else:
+            raise Exception('ERROR')
