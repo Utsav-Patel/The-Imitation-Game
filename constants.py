@@ -30,7 +30,7 @@ STATE_OF_THE_ART_MODEL_PROJECT1_CNN_CHECKPOINT_PATH = os.path.join(PROJECT_PATH,
                                                                    FILE_PREFIX, FILE_SUFFIX)
 STATE_OF_THE_ART_MODEL_PROJECT2_DENSE_CHECKPOINT_PATH = os.path.join(PROJECT_PATH, "checkpoints", "project2", "dense",
                                                                      FILE_PREFIX, FILE_SUFFIX)
-STATE_OF_THE_ART_MODEL_PROJECT2_CNN_CHECKPOINT_PATH = os.path.join(PROJECT_PATH, "checkpoints", "project1", "cnn",
+STATE_OF_THE_ART_MODEL_PROJECT2_CNN_CHECKPOINT_PATH = os.path.join(PROJECT_PATH, "checkpoints", "project2", "cnn",
                                                                    FILE_PREFIX, FILE_SUFFIX)
 
 PROJECT2_DATA_PATH = os.path.join(PROJECT_PATH, "data", "project" + str(PROJECT_NO), FILE_PREFIX,
