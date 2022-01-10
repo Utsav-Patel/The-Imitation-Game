@@ -85,4 +85,4 @@ We got similar results as our dense layers here.
 
 As we can see from above we were successfully able to recreate one agent from each of our previous projects with a high enough level of accuracy using neural networks.
 
-For an indepth explanation on how we prepared data, how we tested different architectures and how we got our results, please refer to our report here](https://github.com/Utsav-Patel/Probability-in-Gridworld/blob/master/Probability_in_Gridworld.pdf)
+For an indepth explanation on how we prepared data, how we tested different architectures and how we got our results, please refer to our report here](https://github.com/Utsav-Patel/The-Imitation-Game/blob/master/The%20Imitation%20Game.pdf)
